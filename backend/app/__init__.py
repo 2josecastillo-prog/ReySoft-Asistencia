@@ -1,0 +1,2 @@
+"""ReySoft-Asistencia backend application."""
+

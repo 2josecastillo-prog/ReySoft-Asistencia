@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReySoft-Asistencia Local</title>
+    <style>
+      :root { --primary: #2563eb; --secondary: #1e293b; --accent: #f59e0b; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: #f8fafc; color: #0f172a; font-family: Arial, Helvetica, sans-serif; }
+      button, input, select, textarea { font: inherit; }
+      .top { min-height: 70vh; background: #0f172a; color: white; padding: 28px; display: grid; align-items: center; }
+      .wrap { max-width: 1120px; margin: 0 auto; width: 100%; }
+      .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 800; }
+      .mark { background: var(--accent); color: #111827; padding: 10px 12px; border-radius: 8px; }
+      h1 { font-size: 64px; margin: 48px 0 16px; line-height: 1; }
+      h2 { margin: 0 0 12px; }
+      p { line-height: 1.6; }
+      .lead { max-width: 740px; color: #dbeafe; font-size: 18px; }
+      .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+      .btn { border: 0; border-radius: 8px; padding: 11px 15px; cursor: pointer; font-weight: 700; background: white; color: #0f172a; }
+      .btn.primary { background: var(--primary); color: white; }
+      .btn.dark { background: var(--secondary); color: white; }
+      .btn.red { background: #dc2626; color: white; }
+      .section { padding: 36px 28px; }
+      .grid { display: grid; gap: 16px; grid-template-columns: repeat(3, 1fr); }
+      .grid.two { grid-template-columns: repeat(2, 1fr); }
+      .card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; box-shadow: 0 1px 2px rgba(15,23,42,.06); }
+      .muted { color: #64748b; }
+      .hidden { display: none; }
+      .field { display: grid; gap: 6px; margin-bottom: 12px; font-size: 14px; font-weight: 700; color: #334155; }
+      .input { width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 12px; }
+      .app { min-height: 100vh; display: grid; grid-template-columns: 260px 1fr; }
+      .side { background: var(--secondary); color: white; padding: 20px; }
+      .side button { display: block; width: 100%; margin-top: 8px; text-align: left; }
+      .main { padding: 24px; }
+      table { width: 100%; border-collapse: collapse; font-size: 14px; }
+      th, td { padding: 12px; border-bottom: 1px solid #e2e8f0; text-align: left; }
+      th { background: #f1f5f9; color: #64748b; }
+      .badge { display: inline-block; padding: 4px 8px; border-radius: 999px; background: #dcfce7; color: #166534; font-weight: 700; font-size: 12px; }
+      .badge.pending { background: #fef3c7; color: #92400e; }
+      .badge.arrived { background: #dbeafe; color: #1e40af; }
+      @media (max-width: 820px) {
+        h1 { font-size: 44px; }
+        .grid, .grid.two, .app { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="home">
+      <header class="top">
+        <div class="wrap">
+          <div class="brand"><span class="mark">RS</span> ReySoft-Asistencia Local</div>
+          <h1>ReySoft-Asistencia</h1>
+          <p class="lead">SaaS para centros educativos: centros creados por el administrador global, activación manual, datos aislados por centro, asistencia diaria y enlaces de WhatsApp precargados.</p>
+          <div class="actions">
+            <button class="btn primary" onclick="show('login')">Iniciar sesión</button>
+            <button class="btn" onclick="dashboard('school')">Demo administrador del centro</button>
+            <button class="btn" onclick="dashboard('admin')">Demo administrador global</button>
+          </div>
+          <p class="lead" style="margin-top:20px;">Este es un modo local sin npm para desbloquear localhost:5173. Cuando instales Node.js/npm, run-local.bat usará el frontend React/Vite completo.</p>
+        </div>
+      </header>
+      <section class="section wrap">
+        <div class="grid">
+          <article class="card"><h2>Multiempresa</h2><p class="muted">Cada centro trabaja con sus propios datos mediante organization_id.</p></article>
+          <article class="card"><h2>Activación manual</h2><p class="muted">El administrador global activa, suspende o cancela centros después del pago externo.</p></article>
+          <article class="card"><h2>WhatsApp</h2><p class="muted">Plantillas por estado de asistencia y tutor principal.</p></article>
+        </div>
+      </section>
+    </div>
+
+    <main id="login" class="section wrap hidden">
+      <button class="btn" onclick="show('home')">Volver</button>
+      <section class="card" style="margin-top:16px; max-width:520px;">
+        <h2>Iniciar sesión</h2>
+        <label class="field">Correo electrónico<input id="email" class="input" value="admin@colegioprueba.edu.do"></label>
+        <label class="field">Contraseña<input class="input" type="password" value="SchoolAdmin123!"></label>
+        <button class="btn primary" onclick="login()">Entrar</button>
+        <p class="muted">Demo: superadmin@reysoft-asistencia.com / SuperAdmin123! o admin@colegioprueba.edu.do / SchoolAdmin123!</p>
+        <p id="loginMsg" style="color:#dc2626;"></p>
+      </section>
+    </main>
+
+    <div id="app" class="app hidden">
+      <aside class="side">
+        <div class="brand"><span class="mark">RS</span><span id="title">Panel</span></div>
+        <button class="btn" onclick="panel('inicio')">Inicio</button>
+        <button class="btn school" onclick="panel('cursos')">Cursos</button>
+        <button class="btn school" onclick="panel('tutores')">Tutores</button>
+        <button class="btn school" onclick="panel('estudiantes')">Estudiantes</button>
+        <button class="btn school" onclick="panel('asistencia')">Asistencia</button>
+        <button class="btn school" onclick="panel('whatsapp')">WhatsApp</button>
+        <button class="btn school" onclick="panel('settings')">Configuración</button>
+        <button class="btn red" onclick="show('home')">Salir</button>
+      </aside>
+      <main class="main">
+        <h2 id="panelTitle">Inicio</h2>
+        <div id="panel"></div>
+      </main>
+    </div>
+
+    <script>
+      function show(id) {
+        ['home','login','app'].forEach(function(x){ document.getElementById(x).classList.add('hidden'); });
+        document.getElementById(id).classList.remove('hidden');
+      }
+      function login() {
+        var email = document.getElementById('email').value.toLowerCase();
+        if (email === 'superadmin@reysoft-asistencia.com') return dashboard('admin');
+        if (email === 'admin@colegioprueba.edu.do') return dashboard('school');
+        document.getElementById('loginMsg').textContent = 'Tu cuenta está pendiente de activación. Contacta al administrador.';
+      }
+      function dashboard(kind) {
+        show('app');
+        var isAdmin = kind === 'admin';
+        document.getElementById('title').textContent = isAdmin ? 'Administrador global' : 'Colegio Prueba';
+        document.querySelectorAll('.school').forEach(function(btn){ btn.style.display = isAdmin ? 'none' : 'block'; });
+        panel(isAdmin ? 'admin' : 'inicio');
+      }
+      function panel(name) {
+        var p = document.getElementById('panel');
+        document.getElementById('panelTitle').textContent = titles[name] || name.charAt(0).toUpperCase() + name.slice(1);
+        if (name === 'admin') {
+          p.innerHTML = cards([['Registrados',2],['Activos',1],['Pendientes',1],['Suspendidos',0]]) + table('Centros educativos', ['Centro','Correo','Estado','Acción'], [
+            ['Colegio Prueba','contacto@colegioprueba.edu.do',badge('active'),'<button class="btn">Suspender</button>'],
+            ['Colegio Pendiente','contacto@pendiente.edu.do',badge('pending'),'<button class="btn primary">Activar</button>']
+          ]);
+          return;
+        }
+        if (name === 'inicio') p.innerHTML = cards([['Estudiantes activos',1],['Tutores activos',1],['Asistencias hoy',1],['Ausencias hoy',0],['Excusados hoy',0]]);
+        if (name === 'cursos') p.innerHTML = table('Cursos', ['Nombre','Sección','Año','Estado'], [['Primero','A','2026-2027',badge('active')]]);
+        if (name === 'tutores') p.innerHTML = table('Tutores', ['Nombre','Teléfono','Relación','Estado'], [['María Rodríguez','8095551234','Madre',badge('active')]]);
+        if (name === 'estudiantes') p.innerHTML = table('Estudiantes', ['Nombre','Código','Curso','Estado'], [['Luis Pérez','CPD-001','Primero A',badge('active')]]);
+        if (name === 'asistencia') p.innerHTML = table('Asistencia', ['Fecha','Estudiante','Estado','WhatsApp'], [[new Date().toISOString().slice(0,10),'Luis Pérez',badge('arrived'),'<button class="btn primary" onclick="alert(\\'https://wa.me/8095551234?text=Mensaje%20precargado\\')">Abrir</button>']]);
+        if (name === 'whatsapp') p.innerHTML = '<section class="card"><h2>Plantillas de WhatsApp</h2><textarea class="input" rows="5">Hola {guardian_name}, {student_name} llegó a {school_name} el {date} a las {time}.</textarea><p class="muted">{student_name} {guardian_name} {course_name} {school_name} {date} {time}</p></section>';
+        if (name === 'settings') p.innerHTML = '<section class="card"><h2>Configuración visual</h2><div class="grid"><input class="input" type="color" value="#2563eb"><input class="input" type="color" value="#1e293b"><input class="input" type="color" value="#f59e0b"></div></section>';
+      }
+      function cards(items) {
+        return '<div class="grid">' + items.map(function(x){ return '<article class="card"><p class="muted">'+x[0]+'</p><h2 style="font-size:36px;">'+x[1]+'</h2></article>'; }).join('') + '</div>';
+      }
+      function badge(v) {
+        var labels = { active: 'Activo', pending: 'Pendiente', arrived: 'Llegó' };
+        return '<span class="badge '+v+'">'+(labels[v] || v)+'</span>';
+      }
+      function table(title, heads, rows) {
+        return '<section class="card" style="margin-top:18px; overflow:auto;"><h2>'+title+'</h2><table><thead><tr>'+heads.map(function(h){ return '<th>'+h+'</th>'; }).join('')+'</tr></thead><tbody>'+rows.map(function(r){ return '<tr>'+r.map(function(c){ return '<td>'+c+'</td>'; }).join('')+'</tr>'; }).join('')+'</tbody></table></section>';
+      }
+      var titles = {
+        admin: 'Administrador global',
+        inicio: 'Inicio',
+        cursos: 'Cursos',
+        tutores: 'Tutores',
+        estudiantes: 'Estudiantes',
+        asistencia: 'Asistencia',
+        whatsapp: 'WhatsApp',
+        settings: 'Configuración'
+      };
+    </script>
+  </body>
+</html>

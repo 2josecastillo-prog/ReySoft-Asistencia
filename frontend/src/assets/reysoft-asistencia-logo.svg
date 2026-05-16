@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1040 240" role="img" aria-labelledby="title desc">
+  <title id="title">ReySoft-Asistencia</title>
+  <desc id="desc">ReySoft-Asistencia logo with academic cap, chat bubble and notification bell.</desc>
+  <defs>
+    <linearGradient id="cap" x1="42" y1="30" x2="184" y2="118" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1689FF"/>
+      <stop offset="1" stop-color="#063C9D"/>
+    </linearGradient>
+    <linearGradient id="bubble" x1="56" y1="86" x2="174" y2="184" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1689FF"/>
+      <stop offset="1" stop-color="#0B56D8"/>
+    </linearGradient>
+    <linearGradient id="bell" x1="154" y1="82" x2="200" y2="134" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFC21B"/>
+      <stop offset="1" stop-color="#FF8800"/>
+    </linearGradient>
+    <linearGradient id="word" x1="260" y1="0" x2="1010" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#071B72"/>
+      <stop offset=".45" stop-color="#0649C8"/>
+      <stop offset="1" stop-color="#1689FF"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(8 10)">
+    <path fill="url(#bubble)" d="M55 92h100c22 0 40 18 40 40v18c0 22-18 40-40 40h-35l-34 28v-28H55c-22 0-40-18-40-40v-18c0-22 18-40 40-40Z"/>
+    <path fill="#fff" d="M52 105c29-8 54-2 69 20 15-22 40-28 69-20v19c-28-7-50-1-65 22h-8c-15-23-37-29-65-22v-19Z"/>
+    <path fill="url(#cap)" d="M18 74 111 34l93 40c5 2 5 9 0 11l-93 38-93-38c-5-2-5-9 0-11Z"/>
+    <path fill="#063C9D" d="M58 95v27c0 21 24 38 53 38s53-17 53-38V95l-53 22-53-22Z" opacity=".92"/>
+    <path fill="none" stroke="#064AAD" stroke-linecap="round" stroke-width="7" d="M38 87v44"/>
+    <circle cx="38" cy="138" r="10" fill="#0B66E4"/>
+    <path fill="#0B66E4" d="M30 150h16l5 42H25l5-42Z"/>
+    <circle cx="174" cy="108" r="34" fill="#fff"/>
+    <circle cx="174" cy="108" r="27" fill="url(#bell)"/>
+    <path fill="#fff" d="M174 88c-12 0-19 9-19 21v9l-6 8h50l-6-8v-9c0-12-7-21-19-21Zm-7 41h14a7 7 0 0 1-14 0Z"/>
+    <circle cx="78" cy="153" r="8" fill="#E8F2FF"/>
+    <circle cx="108" cy="153" r="8" fill="#E8F2FF"/>
+    <circle cx="138" cy="153" r="8" fill="#E8F2FF"/>
+  </g>
+  <text x="260" y="148" fill="url(#word)" font-family="Inter, Poppins, Arial, sans-serif" font-size="72" font-weight="800" letter-spacing="0">ReySoft-Asistencia</text>
+</svg>
