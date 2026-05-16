@@ -54,6 +54,11 @@ Follow the deployment guide:
 docs/DEPLOYMENT_VERCEL_SUPABASE.md
 ```
 
+## Technical Documentation
+
+- `docs/current_database_schema.sql`: current PostgreSQL schema.
+- `docs/REGLAS_NEGOCIO_Y_LOGICA.md`: current business rules and application logic.
+
 ## Test Credentials
 
 - Super admin: `superadmin@reysoft-asistencia.com` / `SuperAdmin123!`
