@@ -19,6 +19,11 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
     initial_super_admin_email: str = "superadmin@reysoft-asistencia.com"
     initial_super_admin_password: str = "SuperAdmin123!"
+    database_pool_mode: str = "default"
+    storage_backend: str = "local"
+    supabase_url: str | None = None
+    supabase_service_role_key: str | None = None
+    supabase_storage_bucket: str = "school-logos"
     upload_dir: str = "uploads"
     max_logo_upload_bytes: int = 2 * 1024 * 1024
 
@@ -29,8 +34,18 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def reject_default_secret_in_production(self) -> "Settings":
-        if self.environment.lower() == "production" and self.secret_key == "change-me-in-production":
+        if (
+            self.environment.lower() == "production"
+            and self.secret_key == "change-me-in-production"
+        ):
             raise ValueError("SECRET_KEY debe cambiarse en producción.")
+        if self.storage_backend.lower() == "supabase" and (
+            not self.supabase_url or not self.supabase_service_role_key
+        ):
+            raise ValueError(
+                "SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY son obligatorios "
+                "con STORAGE_BACKEND=supabase."
+            )
         return self
 
 

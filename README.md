@@ -44,6 +44,16 @@ docker compose exec backend python -m scripts.seed
 Frontend: `http://localhost:5173`  
 Backend API: `http://localhost:8000`
 
+## Deploy with Vercel and Supabase
+
+The project includes `vercel.json`, `api/index.py`, root `requirements.txt`, and Supabase-ready storage/database settings.
+
+Follow the deployment guide:
+
+```text
+docs/DEPLOYMENT_VERCEL_SUPABASE.md
+```
+
 ## Test Credentials
 
 - Super admin: `superadmin@reysoft-asistencia.com` / `SuperAdmin123!`
@@ -90,6 +100,8 @@ Get-Content reysoft_asistencia_backup.sql | docker compose exec -T postgres psql
 
 - Replace `SECRET_KEY` with a long random value.
 - Restrict `CORS_ORIGINS` to production domains.
+- For Vercel + Supabase, set `DATABASE_POOL_MODE=null`.
+- For logo uploads on Vercel, set `STORAGE_BACKEND=supabase` and configure Supabase Storage.
 - Run `alembic upgrade head` before serving traffic.
 - Seed or create the first `super_admin`.
 - Configure PostgreSQL backups and restore drills.

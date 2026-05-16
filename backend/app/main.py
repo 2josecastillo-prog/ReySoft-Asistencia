@@ -10,8 +10,9 @@ from app.routes import admin, attendance, auth, courses, dashboard, guardians, o
 
 def create_app() -> FastAPI:
     app = FastAPI(title=settings.app_name, debug=settings.debug)
-    Path(settings.upload_dir).mkdir(parents=True, exist_ok=True)
-    app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")
+    if settings.storage_backend.lower() == "local":
+        Path(settings.upload_dir).mkdir(parents=True, exist_ok=True)
+        app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origin_list,

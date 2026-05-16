@@ -52,8 +52,12 @@ pytest
 - `POST /organization/settings/logo`
 - `/dashboard/school`
 
-Los centros educativos ya no se registran desde una ruta pública. El `super_admin` crea cada centro y su primer usuario `school_admin` desde `POST /admin/organizations` o desde el panel global.
+Los centros educativos ya no se registran desde una ruta publica. El `super_admin` crea cada centro y su primer usuario `school_admin` desde `POST /admin/organizations` o desde el panel global.
 
-Los logos se suben como archivos `PNG`, `JPG` o `WEBP`. El backend los guarda en `UPLOAD_DIR/logos` y devuelve una ruta pública `/uploads/logos/...`. Cada centro también puede tener un texto de pie de página configurable desde su configuración o al ser creado por el `super_admin`.
+Los logos se suben como archivos `PNG`, `JPG` o `WEBP`. En local el backend los guarda en `UPLOAD_DIR/logos` y devuelve una ruta publica `/uploads/logos/...`. En Vercel debe usarse `STORAGE_BACKEND=supabase` para guardarlos en Supabase Storage. Cada centro tambien puede tener un texto de pie de pagina configurable desde su configuracion o al ser creado por el `super_admin`.
 
-La importación/exportación de estudiantes acepta `.xlsx` y CSV compatible con Excel. Para exportar CSV usa `GET /students/export?file_format=csv`; el CSV se genera en UTF-8 con BOM para abrir acentos correctamente en Excel.
+La importacion/exportacion de estudiantes acepta `.xlsx` y CSV compatible con Excel. Para exportar CSV usa `GET /students/export?file_format=csv`; el CSV se genera en UTF-8 con BOM para abrir acentos correctamente en Excel.
+
+## Vercel + Supabase
+
+Consulta `../docs/DEPLOYMENT_VERCEL_SUPABASE.md`. Para Vercel Functions con Supabase usa `DATABASE_POOL_MODE=null` y una cadena `DATABASE_URL` con `postgresql+psycopg://...`.
