@@ -37,9 +37,18 @@ class AdminUpdateOrganizationRequest(BaseModel):
     footer_text: str | None = Field(default=None, max_length=500)
 
 
+class AdminResetSchoolAdminPasswordRequest(BaseModel):
+    password: str = Field(min_length=8, max_length=72)
+
+
 class AdminCreateOrganizationResponse(BaseModel):
     message: str
     organization: OrganizationResponse
+    admin_user: UserResponse
+
+
+class AdminResetSchoolAdminPasswordResponse(BaseModel):
+    message: str
     admin_user: UserResponse
 
 

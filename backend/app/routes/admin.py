@@ -21,6 +21,8 @@ from app.models import (
 from app.schemas.admin import (
     AdminCreateOrganizationRequest,
     AdminCreateOrganizationResponse,
+    AdminResetSchoolAdminPasswordRequest,
+    AdminResetSchoolAdminPasswordResponse,
     AdminUpdateOrganizationRequest,
     ActivationRequest,
     NotificationResponse,
@@ -235,6 +237,54 @@ def update_organization(
     db.commit()
     db.refresh(organization)
     return organization
+
+
+@router.put(
+    "/organizations/{organization_id}/school-admin-password",
+    response_model=AdminResetSchoolAdminPasswordResponse,
+)
+def reset_school_admin_password(
+    organization_id: UUID,
+    payload: AdminResetSchoolAdminPasswordRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    ensure_super_admin(current_user)
+    organization = db.get(Organization, organization_id)
+    if not organization:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Centro educativo no encontrado.")
+
+    school_admin = db.scalar(
+        select(User)
+        .where(
+            User.organization_id == organization.id,
+            User.role == UserRole.school_admin,
+        )
+        .order_by(User.created_at.asc())
+        .limit(1)
+    )
+    if not school_admin:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Este centro no tiene un administrador escolar registrado.",
+        )
+
+    school_admin.password_hash = hash_password(payload.password)
+    create_audit_log(
+        db,
+        action="reset_school_admin_password",
+        user=current_user,
+        organization_id=organization.id,
+        entity_name="users",
+        entity_id=school_admin.id,
+        old_data={"email": school_admin.email},
+        new_data={"password_changed": True, "email": school_admin.email},
+        request=request,
+    )
+    db.commit()
+    db.refresh(school_admin)
+    return {"message": "Contraseña del administrador del centro actualizada.", "admin_user": school_admin}
 
 
 @router.post("/organizations/{organization_id}/activate", response_model=OrganizationResponse)

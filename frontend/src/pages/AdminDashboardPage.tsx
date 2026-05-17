@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from 'react';
-import { Check, PauseCircle, Pencil, Plus, Save, X, XCircle } from 'lucide-react';
+import { Check, KeyRound, PauseCircle, Pencil, Plus, Save, X, XCircle } from 'lucide-react';
 import { api, extractError } from '../api/client';
 import { EmptyState } from '../components/EmptyState';
 import { ProjectLogo } from '../components/ProjectLogo';
@@ -52,6 +52,12 @@ const initialActivationForm = {
   notes: 'Activación manual desde panel'
 };
 
+const initialPasswordForm = {
+  organizationId: '',
+  organizationName: '',
+  password: ''
+};
+
 export function AdminDashboardPage() {
   const { logout } = useAuth();
   const [stats, setStats] = useState<AdminStats | null>(null);
@@ -61,6 +67,7 @@ export function AdminDashboardPage() {
   const [statusFilter, setStatusFilter] = useState<OrganizationStatus | ''>('');
   const [form, setForm] = useState(initialOrganizationForm);
   const [activationForm, setActivationForm] = useState(initialActivationForm);
+  const [passwordForm, setPasswordForm] = useState(initialPasswordForm);
   const [editingOrganizationId, setEditingOrganizationId] = useState<string | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [logoInputKey, setLogoInputKey] = useState(0);
@@ -128,6 +135,16 @@ export function AdminDashboardPage() {
     });
   }
 
+  function startPasswordReset(organization: Organization) {
+    setError('');
+    setMessage('');
+    setPasswordForm({
+      organizationId: organization.id,
+      organizationName: organization.name,
+      password: ''
+    });
+  }
+
   async function activateOrganization(event: FormEvent) {
     event.preventDefault();
     if (!activationForm.organizationId) return;
@@ -139,6 +156,22 @@ export function AdminDashboardPage() {
       setActivationForm(initialActivationForm);
       setMessage('Centro educativo activado.');
       await loadData();
+    } catch (err) {
+      setError(extractError(err));
+    }
+  }
+
+  async function resetSchoolAdminPassword(event: FormEvent) {
+    event.preventDefault();
+    if (!passwordForm.organizationId) return;
+    setError('');
+    setMessage('');
+    try {
+      await api.put(`/admin/organizations/${passwordForm.organizationId}/school-admin-password`, {
+        password: passwordForm.password
+      });
+      setPasswordForm(initialPasswordForm);
+      setMessage('Contraseña del administrador del centro actualizada.');
     } catch (err) {
       setError(extractError(err));
     }
@@ -329,6 +362,30 @@ export function AdminDashboardPage() {
               </div>
             </form>
           )}
+          {passwordForm.organizationId && (
+            <form className="grid gap-3 border-b border-slate-200 bg-blue-50 p-4 md:grid-cols-[1fr_260px_auto]" onSubmit={resetSchoolAdminPassword}>
+              <div>
+                <p className="text-xs font-semibold uppercase text-blue-700">Cambiar contraseña</p>
+                <p className="font-medium text-slate-900">{passwordForm.organizationName}</p>
+              </div>
+              <label className="grid gap-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Nueva contraseña del administrador
+                <input
+                  className="form-input"
+                  type="password"
+                  minLength={8}
+                  maxLength={72}
+                  value={passwordForm.password}
+                  onChange={(event) => setPasswordForm({ ...passwordForm, password: event.target.value })}
+                  required
+                />
+              </label>
+              <div className="flex items-end gap-2">
+                <button className="btn-primary" type="submit"><KeyRound size={16} />Guardar</button>
+                <button className="btn-secondary" type="button" onClick={() => setPasswordForm(initialPasswordForm)}><X size={16} /></button>
+              </div>
+            </form>
+          )}
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead className="bg-slate-100 text-xs uppercase text-slate-500">
@@ -350,6 +407,7 @@ export function AdminDashboardPage() {
                     <td className="p-3"><StatusBadge value={organization.status} /></td>
                     <td className="flex flex-wrap gap-2 p-3">
                       <button className="btn-secondary" onClick={() => startEditing(organization)}><Pencil size={16} />Editar</button>
+                      <button className="btn-secondary" onClick={() => startPasswordReset(organization)}><KeyRound size={16} />Contraseña</button>
                       <button className="btn-secondary" onClick={() => startActivation(organization)}><Check size={16} />Activar</button>
                       <button className="btn-secondary" onClick={() => changeStatus(organization.id, 'suspend')}><PauseCircle size={16} />Suspender</button>
                       <button className="btn-danger" onClick={() => changeStatus(organization.id, 'cancel')}><XCircle size={16} />Cancelar</button>

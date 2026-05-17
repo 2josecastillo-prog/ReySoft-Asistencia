@@ -394,6 +394,41 @@ def test_super_admin_updates_registered_organization(client: TestClient):
     assert forbidden.status_code == 403
 
 
+def test_super_admin_resets_school_admin_password(client: TestClient):
+    organization = create_school_by_super_admin(client, "password")
+    activate_school(client, organization["id"])
+    super_admin_headers = auth_headers(client, "superadmin@example.com", "SuperAdmin123!")
+    old_school_headers = auth_headers(client, "admin-password@example.com", "SchoolAdmin123!")
+
+    forbidden = client.put(
+        f"/admin/organizations/{organization['id']}/school-admin-password",
+        json={"password": "NewSchoolAdmin123!"},
+        headers=old_school_headers,
+    )
+    assert forbidden.status_code == 403
+
+    response = client.put(
+        f"/admin/organizations/{organization['id']}/school-admin-password",
+        json={"password": "NewSchoolAdmin123!"},
+        headers=super_admin_headers,
+    )
+    assert response.status_code == 200, response.text
+    assert response.json()["message"] == "Contraseña del administrador del centro actualizada."
+    assert response.json()["admin_user"]["email"] == "admin-password@example.com"
+    assert "password_hash" not in response.json()["admin_user"]
+
+    old_login = client.post(
+        "/auth/login",
+        json={"email": "admin-password@example.com", "password": "SchoolAdmin123!"},
+    )
+    assert old_login.status_code == 401
+
+    new_headers = auth_headers(client, "admin-password@example.com", "NewSchoolAdmin123!")
+    me = client.get("/auth/me", headers=new_headers)
+    assert me.status_code == 200, me.text
+    assert me.json()["role"] == "school_admin"
+
+
 def test_students_export_and_import_excel(client: TestClient):
     organization = create_school_by_super_admin(client)
     activate_school(client, organization["id"])
