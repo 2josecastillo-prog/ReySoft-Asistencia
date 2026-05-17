@@ -5,7 +5,16 @@ import { EmptyState } from '../components/EmptyState';
 import { Course, Guardian, Student } from '../types';
 import { useAuth } from '../auth/AuthContext';
 
-const blankForm = { full_name: '', student_code: '', course_id: '', guardian_id: '', primary_guardian_id: '' };
+const blankForm = {
+  first_name: '',
+  middle_name: '',
+  last_name: '',
+  second_surname: '',
+  student_code: '',
+  course_id: '',
+  guardian_id: '',
+  primary_guardian_id: ''
+};
 
 interface StudentImportResponse {
   created: number;
@@ -48,7 +57,10 @@ export function StudentsPage() {
     setMessage('');
     try {
       await api.post('/students', {
-        full_name: form.full_name,
+        first_name: form.first_name,
+        middle_name: form.middle_name || null,
+        last_name: form.last_name,
+        second_surname: form.second_surname || null,
         student_code: form.student_code || null,
         course_id: form.course_id,
         guardian_ids: [form.guardian_id],
@@ -160,8 +172,11 @@ export function StudentsPage() {
       {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}
       {message && <div className="rounded-md bg-emerald-50 p-3 text-sm text-emerald-700">{message}</div>}
       {canEdit && (
-        <form className="card grid gap-3 p-4 md:grid-cols-5" onSubmit={onSubmit}>
-          <input className="form-input md:col-span-2" placeholder="Nombre completo" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} required />
+        <form className="card grid gap-3 p-4 md:grid-cols-6" onSubmit={onSubmit}>
+          <input className="form-input" placeholder="Primer nombre" value={form.first_name} onChange={(e) => setForm({ ...form, first_name: e.target.value })} required />
+          <input className="form-input" placeholder="Segundo nombre" value={form.middle_name} onChange={(e) => setForm({ ...form, middle_name: e.target.value })} />
+          <input className="form-input" placeholder="Primer apellido" value={form.last_name} onChange={(e) => setForm({ ...form, last_name: e.target.value })} required />
+          <input className="form-input" placeholder="Segundo apellido" value={form.second_surname} onChange={(e) => setForm({ ...form, second_surname: e.target.value })} />
           <input className="form-input" placeholder="Código" value={form.student_code} onChange={(e) => setForm({ ...form, student_code: e.target.value })} />
           <select className="form-input" value={form.course_id} onChange={(e) => setForm({ ...form, course_id: e.target.value })} required>
             <option value="">Curso</option>
@@ -171,7 +186,7 @@ export function StudentsPage() {
             <option value="">Tutor principal</option>
             {guardians.map((guardian) => <option key={guardian.id} value={guardian.id}>{guardian.full_name}</option>)}
           </select>
-          <button className="btn-primary md:col-span-5"><Plus size={16} />Crear estudiante</button>
+          <button className="btn-primary md:col-span-6"><Plus size={16} />Crear estudiante</button>
         </form>
       )}
       <div className="card overflow-hidden">

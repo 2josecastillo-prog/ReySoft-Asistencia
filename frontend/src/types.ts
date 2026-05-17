@@ -2,6 +2,14 @@ export type OrganizationStatus = 'pending' | 'active' | 'suspended' | 'cancelled
 export type UserRole = 'super_admin' | 'school_admin' | 'staff';
 export type AttendanceStatus = 'arrived' | 'absent' | 'late' | 'early_pickup' | 'excused';
 
+export interface NameParts {
+  first_name: string;
+  middle_name?: string | null;
+  last_name: string;
+  second_surname?: string | null;
+  full_name: string;
+}
+
 export interface Organization {
   id: string;
   name: string;
@@ -17,10 +25,9 @@ export interface Organization {
   updated_at: string;
 }
 
-export interface User {
+export interface User extends NameParts {
   id: string;
   organization_id?: string | null;
-  full_name: string;
   email: string;
   role: UserRole;
   is_active: boolean;
@@ -36,20 +43,18 @@ export interface Course {
   is_active: boolean;
 }
 
-export interface Guardian {
+export interface Guardian extends NameParts {
   id: string;
   organization_id: string;
-  full_name: string;
   phone: string;
   relationship?: string | null;
   is_active: boolean;
 }
 
-export interface Student {
+export interface Student extends NameParts {
   id: string;
   organization_id: string;
   course_id: string;
-  full_name: string;
   student_code?: string | null;
   is_active: boolean;
 }
@@ -124,10 +129,9 @@ export interface AttendanceCourseReport extends AttendanceReportBase {
   danger_students: number;
 }
 
-export interface ParentGuardian {
+export interface ParentGuardian extends NameParts {
   id: string;
   organization_id: string;
-  full_name: string;
   phone: string;
   relationship?: string | null;
   organization: Organization;
@@ -139,9 +143,8 @@ export interface ParentLoginResponse {
   guardian: ParentGuardian;
 }
 
-export interface ParentStudent {
+export interface ParentStudent extends NameParts {
   id: string;
-  full_name: string;
   student_code?: string | null;
   course_id: string;
   course_name: string;

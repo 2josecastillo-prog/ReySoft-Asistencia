@@ -5,7 +5,15 @@ import { EmptyState } from '../components/EmptyState';
 import { User } from '../types';
 import { userRoleLabels } from '../utils/labels';
 
-const blankForm = { full_name: '', email: '', password: '', is_active: true };
+const blankForm = {
+  first_name: '',
+  middle_name: '',
+  last_name: '',
+  second_surname: '',
+  email: '',
+  password: '',
+  is_active: true
+};
 
 export function StaffUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -38,13 +46,16 @@ export function StaffUsersPage() {
     setMessage('');
     try {
       const payload = {
-        full_name: form.full_name,
+        first_name: form.first_name,
+        middle_name: form.middle_name || null,
+        last_name: form.last_name,
+        second_surname: form.second_surname || null,
         email: form.email,
         ...(form.password ? { password: form.password } : {}),
         ...(editingId ? { is_active: form.is_active } : {})
       };
       if (editingId) await api.put(`/users/${editingId}`, payload);
-      else await api.post('/users', { full_name: form.full_name, email: form.email, password: form.password });
+      else await api.post('/users', payload);
       setForm(blankForm);
       setEditingId(null);
       setMessage(editingId ? 'Usuario actualizado.' : 'Usuario de personal creado.');
@@ -70,7 +81,10 @@ export function StaffUsersPage() {
   function editUser(user: User) {
     setEditingId(user.id);
     setForm({
-      full_name: user.full_name,
+      first_name: user.first_name,
+      middle_name: user.middle_name ?? '',
+      last_name: user.last_name,
+      second_surname: user.second_surname ?? '',
       email: user.email,
       password: '',
       is_active: user.is_active
@@ -104,11 +118,14 @@ export function StaffUsersPage() {
       {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}
       {message && <div className="rounded-md bg-emerald-50 p-3 text-sm text-emerald-700">{message}</div>}
 
-      <form className="card grid gap-3 p-4 md:grid-cols-5" onSubmit={onSubmit}>
-        <input className="form-input md:col-span-2" placeholder="Nombre completo" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} required />
+      <form className="card grid gap-3 p-4 md:grid-cols-6" onSubmit={onSubmit}>
+        <input className="form-input" placeholder="Primer nombre" value={form.first_name} onChange={(e) => setForm({ ...form, first_name: e.target.value })} required />
+        <input className="form-input" placeholder="Segundo nombre" value={form.middle_name} onChange={(e) => setForm({ ...form, middle_name: e.target.value })} />
+        <input className="form-input" placeholder="Primer apellido" value={form.last_name} onChange={(e) => setForm({ ...form, last_name: e.target.value })} required />
+        <input className="form-input" placeholder="Segundo apellido" value={form.second_surname} onChange={(e) => setForm({ ...form, second_surname: e.target.value })} />
         <input className="form-input" placeholder="Correo electrónico" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} required />
         <input className="form-input" placeholder={editingId ? 'Nueva contraseña opcional' : 'Contraseña'} type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} required={!editingId} />
-        <button className="btn-primary"><Plus size={16} />{editingId ? 'Guardar' : 'Crear personal'}</button>
+        <button className="btn-primary md:col-span-6"><Plus size={16} />{editingId ? 'Guardar' : 'Crear personal'}</button>
         {editingId && (
           <div className="flex flex-wrap items-center gap-3 md:col-span-5">
             <label className="flex items-center gap-2 text-sm text-slate-700">

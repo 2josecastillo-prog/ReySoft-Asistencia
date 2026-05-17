@@ -24,12 +24,16 @@ from app.schemas.student import (
     StudentUpdate,
 )
 from app.services.audit import create_audit_log
+from app.utils.names import name_search_filter, name_sort_columns, split_full_name
 from app.utils.phone import clean_phone_number
 
 router = APIRouter(prefix="/students", tags=["students"])
 
 STUDENT_EXCEL_HEADERS = [
-    "nombre_completo",
+    "primer_nombre",
+    "segundo_nombre",
+    "primer_apellido",
+    "segundo_apellido",
     "codigo",
     "curso",
     "seccion",
@@ -39,7 +43,8 @@ STUDENT_EXCEL_HEADERS = [
     "tutor_principal_telefono",
 ]
 STUDENT_IMPORT_REQUIRED_HEADERS = [
-    "nombre_completo",
+    "primer_nombre",
+    "primer_apellido",
     "codigo",
     "curso",
     "seccion",
@@ -146,6 +151,25 @@ def _find_primary_guardian_name(db: Session, student_id: UUID) -> tuple[str | No
     return guardian.full_name, guardian.phone
 
 
+def _legacy_or_split_name(values: dict[str, str | None]) -> dict[str, str | None]:
+    first_name = values.get("primer_nombre")
+    middle_name = values.get("segundo_nombre")
+    last_name = values.get("primer_apellido")
+    second_surname = values.get("segundo_apellido")
+    if (not first_name or not last_name) and values.get("nombre_completo"):
+        legacy_parts = split_full_name(values.get("nombre_completo"))
+        first_name = first_name or legacy_parts["first_name"]
+        middle_name = middle_name or legacy_parts["middle_name"]
+        last_name = last_name or legacy_parts["last_name"]
+        second_surname = second_surname or legacy_parts["second_surname"]
+    return {
+        "first_name": first_name,
+        "middle_name": middle_name,
+        "last_name": last_name,
+        "second_surname": second_surname,
+    }
+
+
 def _set_primary_guardian(db: Session, student: Student, guardian: Guardian) -> None:
     db.execute(update(StudentGuardian).where(StudentGuardian.student_id == student.id).values(is_primary=False))
     relation = db.scalar(
@@ -186,14 +210,17 @@ def _student_export_rows(db: Session, organization_id: UUID) -> list[list[str | 
         select(Student, Course)
         .join(Course, Course.id == Student.course_id)
         .where(Student.organization_id == organization_id)
-        .order_by(Student.full_name)
+        .order_by(*name_sort_columns(Student))
     ).all()
     data: list[list[str | None]] = []
     for student, course in rows:
         guardian_name, guardian_phone = _find_primary_guardian_name(db, student.id)
         data.append(
             [
-                student.full_name,
+                student.first_name,
+                student.middle_name,
+                student.last_name,
+                student.second_surname,
                 student.student_code,
                 course.name,
                 course.section,
@@ -207,6 +234,18 @@ def _student_export_rows(db: Session, organization_id: UUID) -> list[list[str | 
 
 
 def _validate_import_headers(headers: list[str | None]) -> dict[str, int]:
+    legacy_headers = {
+        "nombre_completo",
+        "codigo",
+        "curso",
+        "seccion",
+        "anio_academico",
+        "activo",
+        "tutor_principal_telefono",
+    }
+    present_headers = {header for header in headers if header}
+    if legacy_headers.issubset(present_headers):
+        return {header: headers.index(header) for header in headers if header}
     missing_headers = [header for header in STUDENT_IMPORT_REQUIRED_HEADERS if header not in headers]
     if missing_headers:
         raise HTTPException(
@@ -228,7 +267,7 @@ def _import_student_rows(
     errors: list[str] = []
 
     for row_number, values in enumerate(rows, start=2):
-        full_name = values.get("nombre_completo")
+        name_parts = _legacy_or_split_name(values)
         student_code = values.get("codigo")
         course_name = values.get("curso")
         section = values.get("seccion")
@@ -237,8 +276,10 @@ def _import_student_rows(
 
         if not any(values.values()):
             continue
-        if not full_name or not course_name or not guardian_phone:
-            errors.append(f"Fila {row_number}: nombre_completo, curso y tutor_principal_telefono son obligatorios.")
+        if not name_parts["first_name"] or not name_parts["last_name"] or not course_name or not guardian_phone:
+            errors.append(
+                f"Fila {row_number}: primer_nombre, primer_apellido, curso y tutor_principal_telefono son obligatorios."
+            )
             continue
 
         course = _find_course_by_excel_values(db, current_user.organization_id, course_name, section, academic_year)
@@ -267,7 +308,10 @@ def _import_student_rows(
             )
 
         if student:
-            student.full_name = full_name
+            student.first_name = name_parts["first_name"]
+            student.middle_name = name_parts["middle_name"]
+            student.last_name = name_parts["last_name"]
+            student.second_surname = name_parts["second_surname"]
             student.course_id = course.id
             student.is_active = _cell_bool(values.get("activo"))
             updated += 1
@@ -275,7 +319,10 @@ def _import_student_rows(
             student = Student(
                 organization_id=current_user.organization_id,
                 course_id=course.id,
-                full_name=full_name,
+                first_name=name_parts["first_name"],
+                middle_name=name_parts["middle_name"],
+                last_name=name_parts["last_name"],
+                second_surname=name_parts["second_surname"],
                 student_code=student_code,
                 is_active=_cell_bool(values.get("activo")),
             )
@@ -314,7 +361,10 @@ def create_student(
     student = Student(
         organization_id=organization_id,
         course_id=payload.course_id,
-        full_name=payload.full_name,
+        first_name=payload.first_name,
+        middle_name=payload.middle_name,
+        last_name=payload.last_name,
+        second_surname=payload.second_surname,
         student_code=payload.student_code,
         is_active=payload.is_active,
     )
@@ -357,12 +407,12 @@ def list_students(
     ensure_school_user(current_user)
     query = select(Student).where(Student.organization_id == current_user.organization_id)
     if search:
-        query = query.where(Student.full_name.ilike(f"%{search}%"))
+        query = query.where(name_search_filter(Student, search))
     if course_id:
         query = query.where(Student.course_id == course_id)
     if is_active is not None:
         query = query.where(Student.is_active == is_active)
-    return db.scalars(query.order_by(Student.full_name)).all()
+    return db.scalars(query.order_by(*name_sort_columns(Student))).all()
 
 
 @router.get("/export")

@@ -10,6 +10,7 @@ from app.dependencies.auth import get_current_user
 from app.models import Guardian, User
 from app.schemas.guardian import GuardianCreate, GuardianResponse, GuardianUpdate
 from app.services.audit import create_audit_log
+from app.utils.names import name_search_filter, name_sort_columns
 from app.utils.phone import clean_phone_number
 
 router = APIRouter(prefix="/guardians", tags=["guardians"])
@@ -63,7 +64,7 @@ def list_guardians(
         search_term = search.strip()
         phone_term = clean_phone_number(search_term)
         conditions = [
-            Guardian.full_name.ilike(f"%{search_term}%"),
+            name_search_filter(Guardian, search_term),
             Guardian.relationship.ilike(f"%{search_term}%"),
         ]
         if phone_term:
@@ -71,7 +72,7 @@ def list_guardians(
         query = query.where(or_(*conditions))
     if is_active is not None:
         query = query.where(Guardian.is_active == is_active)
-    return db.scalars(query.order_by(Guardian.full_name)).all()
+    return db.scalars(query.order_by(*name_sort_columns(Guardian))).all()
 
 
 @router.get("/{guardian_id}", response_model=GuardianResponse)
@@ -94,7 +95,15 @@ def update_guardian(
 ):
     ensure_school_admin(current_user)
     guardian = _get_guardian_or_404(db, guardian_id, current_user.organization_id)
-    old_data = {"full_name": guardian.full_name, "phone": guardian.phone, "relationship": guardian.relationship}
+    old_data = {
+        "full_name": guardian.full_name,
+        "first_name": guardian.first_name,
+        "middle_name": guardian.middle_name,
+        "last_name": guardian.last_name,
+        "second_surname": guardian.second_surname,
+        "phone": guardian.phone,
+        "relationship": guardian.relationship,
+    }
     update_data = payload.model_dump(exclude_unset=True)
     if "phone" in update_data and update_data["phone"]:
         update_data["phone"] = clean_phone_number(update_data["phone"])

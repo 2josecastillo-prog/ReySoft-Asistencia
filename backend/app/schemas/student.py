@@ -3,10 +3,11 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from app.schemas.name import NamePartsBase, OptionalNamePartsBase
 
-class StudentCreate(BaseModel):
+
+class StudentCreate(NamePartsBase):
     course_id: UUID
-    full_name: str = Field(min_length=2, max_length=150)
     student_code: str | None = Field(default=None, max_length=50)
     is_active: bool = True
     guardian_ids: list[UUID] = Field(min_length=1)
@@ -19,9 +20,8 @@ class StudentCreate(BaseModel):
         return self
 
 
-class StudentUpdate(BaseModel):
+class StudentUpdate(OptionalNamePartsBase):
     course_id: UUID | None = None
-    full_name: str | None = Field(default=None, min_length=2, max_length=150)
     student_code: str | None = Field(default=None, max_length=50)
     is_active: bool | None = None
 
@@ -32,6 +32,10 @@ class StudentResponse(BaseModel):
     id: UUID
     organization_id: UUID
     course_id: UUID
+    first_name: str
+    middle_name: str | None
+    last_name: str
+    second_surname: str | None
     full_name: str
     student_code: str | None
     is_active: bool

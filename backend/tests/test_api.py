@@ -21,7 +21,8 @@ def create_school_by_super_admin(client: TestClient, suffix: str = "one", status
         "organization_name": f"Colegio {suffix}",
         "organization_email": f"contacto-{suffix}@example.com",
         "organization_phone": "(809) 555-1234",
-        "admin_full_name": f"Admin {suffix}",
+        "admin_first_name": "Admin",
+        "admin_last_name": suffix.title(),
         "admin_email": f"admin-{suffix}@example.com",
         "password": "SchoolAdmin123!",
         "status": status,
@@ -45,6 +46,33 @@ def activate_school(client: TestClient, organization_id: str) -> None:
     assert response.json()["status"] == "active"
 
 
+def test_name_parts_are_stored_and_full_name_is_computed(client: TestClient):
+    headers = auth_headers(client, "superadmin@example.com", "SuperAdmin123!")
+    response = client.post(
+        "/admin/organizations",
+        json={
+            "organization_name": "Colegio Nombres",
+            "organization_email": "nombres@example.com",
+            "organization_phone": "(809) 555-1234",
+            "admin_first_name": "Ana",
+            "admin_middle_name": "Isabel",
+            "admin_last_name": "Matos",
+            "admin_second_surname": "Reyes",
+            "admin_email": "admin-nombres@example.com",
+            "password": "SchoolAdmin123!",
+            "status": "active",
+        },
+        headers=headers,
+    )
+    assert response.status_code == 201, response.text
+    admin_user = response.json()["admin_user"]
+    assert admin_user["first_name"] == "Ana"
+    assert admin_user["middle_name"] == "Isabel"
+    assert admin_user["last_name"] == "Matos"
+    assert admin_user["second_surname"] == "Reyes"
+    assert admin_user["full_name"] == "Ana Isabel Matos Reyes"
+
+
 def create_school_basics(client: TestClient, headers: dict[str, str]) -> tuple[dict, dict, dict]:
     course_response = client.post(
         "/courses",
@@ -54,14 +82,15 @@ def create_school_basics(client: TestClient, headers: dict[str, str]) -> tuple[d
     assert course_response.status_code == 201, course_response.text
     guardian_response = client.post(
         "/guardians",
-        json={"full_name": "María Rodríguez", "phone": "(809) 555-1234", "relationship": "Madre"},
+        json={"first_name": "María", "last_name": "Rodríguez", "phone": "(809) 555-1234", "relationship": "Madre"},
         headers=headers,
     )
     assert guardian_response.status_code == 201, guardian_response.text
     student_response = client.post(
         "/students",
         json={
-            "full_name": "Luis Pérez",
+            "first_name": "Luis",
+            "last_name": "Pérez",
             "student_code": "ST-001",
             "course_id": course_response.json()["id"],
             "guardian_ids": [guardian_response.json()["id"]],
@@ -80,7 +109,8 @@ def test_public_registration_is_disabled_and_super_admin_can_create_pending_scho
             "organization_name": "Colegio Publico",
             "organization_email": "publico@example.com",
             "organization_phone": "(809) 555-1234",
-            "admin_full_name": "Admin Publico",
+            "admin_first_name": "Admin",
+            "admin_last_name": "Publico",
             "admin_email": "admin-publico@example.com",
             "password": "SchoolAdmin123!",
         },
@@ -202,7 +232,7 @@ def test_courses_guardians_students_and_guardian_assignment(client: TestClient):
 
     second_guardian = client.post(
         "/guardians",
-        json={"full_name": "Carlos Pérez", "phone": "809-555-5678", "relationship": "Padre"},
+        json={"first_name": "Carlos", "last_name": "Pérez", "phone": "809-555-5678", "relationship": "Padre"},
         headers=headers,
     ).json()
     assignment = client.post(
@@ -235,7 +265,7 @@ def test_guardian_search_matches_name_phone_and_relationship(client: TestClient)
     create_school_basics(client, headers)
     carlos = client.post(
         "/guardians",
-        json={"full_name": "Carlos Pérez", "phone": "809-555-5678", "relationship": "Padre"},
+        json={"first_name": "Carlos", "last_name": "Pérez", "phone": "809-555-5678", "relationship": "Padre"},
         headers=headers,
     ).json()
 
@@ -261,7 +291,8 @@ def test_school_admin_manages_staff_and_staff_permissions(client: TestClient):
     create_staff = client.post(
         "/users",
         json={
-            "full_name": "Auxiliar de Asistencia",
+            "first_name": "Auxiliar",
+            "last_name": "Asistencia",
             "email": "staff-one@example.com",
             "password": "Staff12345!",
         },
@@ -301,7 +332,8 @@ def test_school_admin_manages_staff_and_staff_permissions(client: TestClient):
     staff_cannot_manage_users = client.post(
         "/users",
         json={
-            "full_name": "Otro personal",
+            "first_name": "Otro",
+            "last_name": "Personal",
             "email": "staff-two@example.com",
             "password": "Staff12345!",
         },
@@ -372,7 +404,8 @@ def test_organization_footer_is_configurable_by_super_admin_and_school_admin(cli
         "organization_name": "Colegio Footer",
         "organization_email": "footer@example.com",
         "organization_phone": "(809) 555-1212",
-        "admin_full_name": "Admin Footer",
+        "admin_first_name": "Admin",
+        "admin_last_name": "Footer",
         "admin_email": "admin-footer@example.com",
         "password": "SchoolAdmin123!",
         "status": "active",
@@ -491,7 +524,10 @@ def test_students_export_and_import_excel(client: TestClient):
     workbook = load_workbook(BytesIO(export_response.content))
     worksheet = workbook.active
     assert [cell.value for cell in worksheet[1]] == [
-        "nombre_completo",
+        "primer_nombre",
+        "segundo_nombre",
+        "primer_apellido",
+        "segundo_apellido",
         "codigo",
         "curso",
         "seccion",
@@ -502,16 +538,19 @@ def test_students_export_and_import_excel(client: TestClient):
     ]
     assert worksheet["A1"].fill.fgColor.rgb == "FF16A34A"
     assert worksheet["A1"].font.bold is True
-    assert worksheet.column_dimensions["A"].width >= len("nombre_completo") + 2
-    assert worksheet.column_dimensions["H"].width >= len("tutor_principal_telefono") + 2
+    assert worksheet.column_dimensions["A"].width >= len("primer_nombre") + 2
+    assert worksheet.column_dimensions["K"].width >= len("tutor_principal_telefono") + 2
     assert worksheet["A2"].alignment.wrap_text is True
     rows = list(worksheet.iter_rows(min_row=2, values_only=True))
-    assert ("Luis Pérez", "ST-001", "Primero", "A", "2026-2027", "si", "María Rodríguez", "8095551234") in rows
+    assert ("Luis", None, "Pérez", None, "ST-001", "Primero", "A", "2026-2027", "si", "María Rodríguez", "8095551234") in rows
 
     import_workbook = Workbook()
     import_sheet = import_workbook.active
     import_sheet.append([
-        "nombre_completo",
+        "primer_nombre",
+        "segundo_nombre",
+        "primer_apellido",
+        "segundo_apellido",
         "codigo",
         "curso",
         "seccion",
@@ -519,8 +558,8 @@ def test_students_export_and_import_excel(client: TestClient):
         "activo",
         "tutor_principal_telefono",
     ])
-    import_sheet.append(["Luis Pérez Actualizado", "ST-001", "Primero", "A", "2026-2027", "si", "8095551234"])
-    import_sheet.append(["Ana Gómez", "ST-777", "Primero", "A", "2026-2027", "no", "8095551234"])
+    import_sheet.append(["Luis", None, "Pérez", "Actualizado", "ST-001", "Primero", "A", "2026-2027", "si", "8095551234"])
+    import_sheet.append(["Ana", None, "Gómez", None, "ST-777", "Primero", "A", "2026-2027", "no", "8095551234"])
     import_stream = BytesIO()
     import_workbook.save(import_stream)
     import_stream.seek(0)
@@ -552,12 +591,16 @@ def test_students_export_and_import_excel(client: TestClient):
     assert csv_export.headers["content-type"].startswith("text/csv")
     assert csv_export.content.startswith(b"\xef\xbb\xbf")
     csv_rows = list(csv.DictReader(StringIO(csv_export.content.decode("utf-8-sig"))))
-    assert csv_rows[0]["nombre_completo"] == "Ana Gómez"
+    assert csv_rows[0]["primer_nombre"] == "Ana"
+    assert csv_rows[0]["primer_apellido"] == "Gómez"
     assert csv_rows[0]["tutor_principal_telefono"] == "8095551234"
 
     csv_payload = StringIO()
     writer = csv.DictWriter(csv_payload, fieldnames=[
-        "nombre_completo",
+        "primer_nombre",
+        "segundo_nombre",
+        "primer_apellido",
+        "segundo_apellido",
         "codigo",
         "curso",
         "seccion",
@@ -567,7 +610,10 @@ def test_students_export_and_import_excel(client: TestClient):
     ])
     writer.writeheader()
     writer.writerow({
-        "nombre_completo": "Luis Pérez CSV",
+        "primer_nombre": "Luis",
+        "segundo_nombre": "",
+        "primer_apellido": "Pérez",
+        "segundo_apellido": "CSV",
         "codigo": "ST-001",
         "curso": "Primero",
         "seccion": "A",
@@ -576,7 +622,10 @@ def test_students_export_and_import_excel(client: TestClient):
         "tutor_principal_telefono": "8095551234",
     })
     writer.writerow({
-        "nombre_completo": "Carlos CSV",
+        "primer_nombre": "Carlos",
+        "segundo_nombre": "",
+        "primer_apellido": "CSV",
+        "segundo_apellido": "",
         "codigo": "ST-888",
         "curso": "Primero",
         "seccion": "A",
@@ -785,13 +834,14 @@ def test_parent_logs_in_with_phone_and_sees_only_their_students_attendance(clien
     course, guardian, student = create_school_basics(client, school_headers)
     other_guardian = client.post(
         "/guardians",
-        json={"full_name": "Tutor externo", "phone": "809-555-0000", "relationship": "Tutor legal"},
+        json={"first_name": "Tutor", "last_name": "Externo", "phone": "809-555-0000", "relationship": "Tutor legal"},
         headers=school_headers,
     ).json()
     other_student = client.post(
         "/students",
         json={
-            "full_name": "Estudiante no asociado",
+            "first_name": "Estudiante",
+            "last_name": "No Asociado",
             "student_code": "ST-999",
             "course_id": course["id"],
             "guardian_ids": [other_guardian["id"]],

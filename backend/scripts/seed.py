@@ -35,7 +35,9 @@ def get_or_create_super_admin(db):
         return user
     user = User(
         organization_id=None,
-        full_name="Administrador Global ReySoft-Asistencia",
+        first_name="Administrador",
+        middle_name="Global",
+        last_name="ReySoft-Asistencia",
         email=SUPER_ADMIN_EMAIL,
         password_hash=hash_password(SUPER_ADMIN_PASSWORD),
         role=UserRole.super_admin,
@@ -73,7 +75,8 @@ def run_seed() -> None:
         if not school_admin:
             school_admin = User(
                 organization_id=organization.id,
-                full_name="Admin Colegio Prueba",
+                first_name="Admin",
+                last_name="Colegio Prueba",
                 email=SCHOOL_ADMIN_EMAIL,
                 password_hash=hash_password(SCHOOL_ADMIN_PASSWORD),
                 role=UserRole.school_admin,
@@ -86,7 +89,8 @@ def run_seed() -> None:
         if not staff_user:
             staff_user = User(
                 organization_id=organization.id,
-                full_name="Auxiliar de Asistencia",
+                first_name="Auxiliar",
+                last_name="Asistencia",
                 email=STAFF_EMAIL,
                 password_hash=hash_password(STAFF_PASSWORD),
                 role=UserRole.staff,
@@ -123,7 +127,8 @@ def run_seed() -> None:
         if not guardian:
             guardian = Guardian(
                 organization_id=organization.id,
-                full_name="María Rodríguez",
+                first_name="María",
+                last_name="Rodríguez",
                 phone="8095551234",
                 relationship="Madre",
                 is_active=True,
@@ -136,7 +141,9 @@ def run_seed() -> None:
             student = Student(
                 organization_id=organization.id,
                 course_id=course.id,
-                full_name="Luis Pérez Rodríguez",
+                first_name="Luis",
+                last_name="Pérez",
+                second_surname="Rodríguez",
                 student_code="CPD-001",
                 is_active=True,
             )

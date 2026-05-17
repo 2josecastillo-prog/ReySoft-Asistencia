@@ -11,6 +11,7 @@ from app.dependencies.auth import get_current_user
 from app.models import User, UserRole
 from app.schemas.user import StaffUserCreate, StaffUserUpdate, UserResponse
 from app.services.audit import create_audit_log
+from app.utils.names import name_search_filter, name_sort_columns
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -54,8 +55,8 @@ def list_school_users(
         query = query.where(User.is_active == is_active)
     if search:
         search_term = search.strip()
-        query = query.where(or_(User.full_name.ilike(f"%{search_term}%"), User.email.ilike(f"%{search_term}%")))
-    return db.scalars(query.order_by(User.role, User.full_name)).all()
+        query = query.where(or_(name_search_filter(User, search_term), User.email.ilike(f"%{search_term}%")))
+    return db.scalars(query.order_by(User.role, *name_sort_columns(User))).all()
 
 
 @router.post("", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
@@ -70,7 +71,10 @@ def create_staff_user(
     _ensure_email_available(db, email)
     user = User(
         organization_id=current_user.organization_id,
-        full_name=payload.full_name,
+        first_name=payload.first_name,
+        middle_name=payload.middle_name,
+        last_name=payload.last_name,
+        second_surname=payload.second_surname,
         email=email,
         password_hash=hash_password(payload.password),
         role=UserRole.staff,
@@ -105,6 +109,10 @@ def update_staff_user(
     user = _get_staff_user_or_404(db, user_id, current_user.organization_id)
     old_data = {
         "full_name": user.full_name,
+        "first_name": user.first_name,
+        "middle_name": user.middle_name,
+        "last_name": user.last_name,
+        "second_surname": user.second_surname,
         "email": user.email,
         "is_active": user.is_active,
     }

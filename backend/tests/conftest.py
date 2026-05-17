@@ -47,7 +47,8 @@ def db_session() -> Generator[Session, None, None]:
         db.add(
             User(
                 organization_id=None,
-                full_name="Administrador Global",
+                first_name="Administrador",
+                last_name="Global",
                 email="superadmin@example.com",
                 password_hash=hash_password("SuperAdmin123!"),
                 role=UserRole.super_admin,

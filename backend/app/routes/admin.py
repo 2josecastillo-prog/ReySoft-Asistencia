@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, UploadFile, status
@@ -81,7 +82,10 @@ def create_organization(
 
     admin_user = User(
         organization_id=organization.id,
-        full_name=payload.admin_full_name,
+        first_name=payload.admin_first_name,
+        middle_name=payload.admin_middle_name,
+        last_name=payload.admin_last_name,
+        second_surname=payload.admin_second_surname,
         email=payload.admin_email.lower(),
         password_hash=hash_password(payload.password),
         role=UserRole.school_admin,
@@ -308,6 +312,7 @@ def activate_organization(
         expiration_date=payload.expiration_date,
         status=SubscriptionStatus.active,
         notes=payload.notes,
+        created_at=datetime.now(),
     )
     db.add(activation)
     db.add(

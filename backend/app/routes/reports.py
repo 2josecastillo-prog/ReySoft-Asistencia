@@ -11,6 +11,7 @@ from app.database.session import get_db
 from app.dependencies.auth import get_current_user
 from app.models import AttendanceRecord, AttendanceStatus, Student, User
 from app.schemas.report import AttendanceCourseReport, AttendanceReportRecord, AttendanceStudentReport
+from app.utils.names import name_sort_columns
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -66,7 +67,7 @@ def _build_student_reports(
         query = query.where(Student.course_id == course_id)
     if not include_inactive:
         query = query.where(Student.is_active.is_(True))
-    students = db.scalars(query.order_by(Student.full_name)).all()
+    students = db.scalars(query.order_by(*name_sort_columns(Student))).all()
     if not students:
         return []
 

@@ -1,5 +1,5 @@
 -- ReySoft-Asistencia current PostgreSQL schema
--- Consolidated from Alembic revisions through 20260516_0004.
+-- Consolidated from Alembic revisions through 20260517_0006.
 -- This file is a reference/export of the current schema, not a replacement for Alembic.
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
@@ -71,7 +71,10 @@ CREATE TABLE organizations (
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     organization_id UUID NULL REFERENCES organizations(id) ON DELETE CASCADE,
-    full_name VARCHAR(150) NOT NULL,
+    first_name VARCHAR(80) NOT NULL,
+    middle_name VARCHAR(80),
+    last_name VARCHAR(80) NOT NULL,
+    second_surname VARCHAR(80),
     email VARCHAR(150) NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     role user_role NOT NULL,
@@ -106,7 +109,10 @@ CREATE TABLE courses (
 CREATE TABLE guardians (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
-    full_name VARCHAR(150) NOT NULL,
+    first_name VARCHAR(80) NOT NULL,
+    middle_name VARCHAR(80),
+    last_name VARCHAR(80) NOT NULL,
+    second_surname VARCHAR(80),
     phone VARCHAR(30) NOT NULL,
     relationship VARCHAR(50),
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
@@ -118,7 +124,10 @@ CREATE TABLE students (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
     course_id UUID NOT NULL REFERENCES courses(id) ON DELETE RESTRICT,
-    full_name VARCHAR(150) NOT NULL,
+    first_name VARCHAR(80) NOT NULL,
+    middle_name VARCHAR(80),
+    last_name VARCHAR(80) NOT NULL,
+    second_surname VARCHAR(80),
     student_code VARCHAR(50),
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -208,7 +217,7 @@ CREATE TABLE alembic_version (
 );
 
 INSERT INTO alembic_version (version_num)
-VALUES ('20260516_0004');
+VALUES ('20260517_0006');
 
 CREATE INDEX idx_organizations_status
 ON organizations(status);

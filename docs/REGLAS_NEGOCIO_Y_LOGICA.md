@@ -244,7 +244,10 @@ RN-73. Se puede exportar estudiantes en `.csv` compatible con Excel.
 
 RN-74. La exportacion contiene:
 
-- `nombre_completo`
+- `primer_nombre`
+- `segundo_nombre`
+- `primer_apellido`
+- `segundo_apellido`
 - `codigo`
 - `curso`
 - `seccion`
@@ -263,13 +266,16 @@ RN-78. La importacion acepta `.xlsx` y `.csv`.
 
 RN-79. Columnas obligatorias para importar:
 
-- `nombre_completo`
+- `primer_nombre`
+- `primer_apellido`
 - `codigo`
 - `curso`
 - `seccion`
 - `anio_academico`
 - `activo`
 - `tutor_principal_telefono`
+
+RN-79.1. La importacion mantiene compatibilidad temporal con archivos antiguos que usen `nombre_completo`; el backend divide ese valor en nombres y apellidos antes de guardar.
 
 RN-80. Para importar, el curso debe existir previamente en la misma organizacion.
 

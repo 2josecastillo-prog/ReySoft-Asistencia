@@ -18,6 +18,7 @@ from app.schemas.parent import (
     ParentTokenResponse,
 )
 from app.services.subscriptions import sync_expired_organization
+from app.utils.names import name_sort_columns
 from app.utils.phone import clean_phone_number
 
 router = APIRouter(prefix="/parents", tags=["parents"])
@@ -62,6 +63,10 @@ def _guardian_students_query(guardian: Guardian):
 def _student_response(student: Student, organization_name: str) -> ParentStudentResponse:
     return ParentStudentResponse(
         id=student.id,
+        first_name=student.first_name,
+        middle_name=student.middle_name,
+        last_name=student.last_name,
+        second_surname=student.second_surname,
         full_name=student.full_name,
         student_code=student.student_code,
         course_id=student.course_id,
@@ -114,7 +119,7 @@ def parent_students(
     db: Session = Depends(get_db),
     current_guardian: Guardian = Depends(get_current_parent_guardian),
 ):
-    students = db.scalars(_guardian_students_query(current_guardian).order_by(Student.full_name)).all()
+    students = db.scalars(_guardian_students_query(current_guardian).order_by(*name_sort_columns(Student))).all()
     return [_student_response(student, current_guardian.organization.name) for student in students]
 
 

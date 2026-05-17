@@ -6,10 +6,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.sqltypes import DateTime, String
 
 from app.database.base import Base
-from app.models.mixins import TimestampMixin
+from app.models.mixins import PersonNameMixin, TimestampMixin
 
 
-class Student(TimestampMixin, Base):
+class Student(PersonNameMixin, TimestampMixin, Base):
     __tablename__ = "students"
     __table_args__ = (
         UniqueConstraint("organization_id", "student_code", name="uq_student_code_per_organization"),
@@ -24,7 +24,6 @@ class Student(TimestampMixin, Base):
     course_id: Mapped[uuid.UUID] = mapped_column(
         Uuid, ForeignKey("courses.id", ondelete="RESTRICT"), nullable=False
     )
-    full_name: Mapped[str] = mapped_column(String(150), nullable=False)
     student_code: Mapped[str | None] = mapped_column(String(50))
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 

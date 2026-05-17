@@ -35,7 +35,10 @@ const initialOrganizationForm = {
   organization_name: '',
   organization_email: '',
   organization_phone: '',
-  admin_full_name: '',
+  admin_first_name: '',
+  admin_middle_name: '',
+  admin_last_name: '',
+  admin_second_surname: '',
   admin_email: '',
   password: '',
   footer_text: '',
@@ -112,7 +115,10 @@ export function AdminDashboardPage() {
       organization_name: organization.name,
       organization_email: organization.email,
       organization_phone: organization.phone ?? '',
-      admin_full_name: '',
+      admin_first_name: '',
+      admin_middle_name: '',
+      admin_last_name: '',
+      admin_second_surname: '',
       admin_email: '',
       password: '',
       footer_text: organization.footer_text ?? '',
@@ -205,7 +211,10 @@ export function AdminDashboardPage() {
         ? (await api.put<Organization>(`/admin/organizations/${editingOrganizationId}`, payload)).data
         : (await api.post<{ organization: Organization }>('/admin/organizations', {
             ...payload,
-            admin_full_name: form.admin_full_name,
+            admin_first_name: form.admin_first_name,
+            admin_middle_name: form.admin_middle_name || null,
+            admin_last_name: form.admin_last_name,
+            admin_second_surname: form.admin_second_surname || null,
             admin_email: form.admin_email,
             password: form.password,
             status: form.status
@@ -274,7 +283,10 @@ export function AdminDashboardPage() {
             <input className="form-input" placeholder="Teléfono del centro" value={form.organization_phone} onChange={(event) => setForm({ ...form, organization_phone: event.target.value })} required />
             {!isEditing && (
               <>
-                <input className="form-input" placeholder="Nombre del administrador" value={form.admin_full_name} onChange={(event) => setForm({ ...form, admin_full_name: event.target.value })} required />
+                <input className="form-input" placeholder="Primer nombre del administrador" value={form.admin_first_name} onChange={(event) => setForm({ ...form, admin_first_name: event.target.value })} required />
+                <input className="form-input" placeholder="Segundo nombre opcional" value={form.admin_middle_name} onChange={(event) => setForm({ ...form, admin_middle_name: event.target.value })} />
+                <input className="form-input" placeholder="Primer apellido del administrador" value={form.admin_last_name} onChange={(event) => setForm({ ...form, admin_last_name: event.target.value })} required />
+                <input className="form-input" placeholder="Segundo apellido opcional" value={form.admin_second_surname} onChange={(event) => setForm({ ...form, admin_second_surname: event.target.value })} />
                 <input className="form-input" placeholder="Correo del administrador" type="email" value={form.admin_email} onChange={(event) => setForm({ ...form, admin_email: event.target.value })} required />
                 <input className="form-input" placeholder="Contraseña temporal" type="password" value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} required />
               </>

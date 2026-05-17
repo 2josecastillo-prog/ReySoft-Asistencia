@@ -1,7 +1,7 @@
 from datetime import date, time
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from app.models.enums import AttendanceStatus
 from app.schemas.organization import OrganizationResponse
@@ -12,8 +12,14 @@ class ParentLoginRequest(BaseModel):
 
 
 class ParentGuardianResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: UUID
     organization_id: UUID
+    first_name: str
+    middle_name: str | None
+    last_name: str
+    second_surname: str | None
     full_name: str
     phone: str
     relationship: str | None
@@ -27,7 +33,13 @@ class ParentTokenResponse(BaseModel):
 
 
 class ParentStudentResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: UUID
+    first_name: str
+    middle_name: str | None
+    last_name: str
+    second_surname: str | None
     full_name: str
     student_code: str | None
     course_id: UUID

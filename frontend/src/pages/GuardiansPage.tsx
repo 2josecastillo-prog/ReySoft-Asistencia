@@ -5,7 +5,15 @@ import { EmptyState } from '../components/EmptyState';
 import { Guardian } from '../types';
 import { useAuth } from '../auth/AuthContext';
 
-const blankForm = { full_name: '', phone: '', relationship: '', is_active: true };
+const blankForm = {
+  first_name: '',
+  middle_name: '',
+  last_name: '',
+  second_surname: '',
+  phone: '',
+  relationship: '',
+  is_active: true
+};
 
 export function GuardiansPage() {
   const { user } = useAuth();
@@ -60,11 +68,14 @@ export function GuardiansPage() {
       </div>
       {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}
       {canEdit && (
-        <form className="card grid gap-3 p-4 md:grid-cols-5" onSubmit={onSubmit}>
-          <input className="form-input md:col-span-2" placeholder="Nombre completo" value={form.full_name} onChange={(e) => setForm({ ...form, full_name: e.target.value })} required />
+        <form className="card grid gap-3 p-4 md:grid-cols-6" onSubmit={onSubmit}>
+          <input className="form-input" placeholder="Primer nombre" value={form.first_name} onChange={(e) => setForm({ ...form, first_name: e.target.value })} required />
+          <input className="form-input" placeholder="Segundo nombre" value={form.middle_name} onChange={(e) => setForm({ ...form, middle_name: e.target.value })} />
+          <input className="form-input" placeholder="Primer apellido" value={form.last_name} onChange={(e) => setForm({ ...form, last_name: e.target.value })} required />
+          <input className="form-input" placeholder="Segundo apellido" value={form.second_surname} onChange={(e) => setForm({ ...form, second_surname: e.target.value })} />
           <input className="form-input" placeholder="Teléfono" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} required />
           <input className="form-input" placeholder="Relación" value={form.relationship} onChange={(e) => setForm({ ...form, relationship: e.target.value })} />
-          <button className="btn-primary"><Plus size={16} />{editingId ? 'Guardar' : 'Crear'}</button>
+          <button className="btn-primary md:col-span-6"><Plus size={16} />{editingId ? 'Guardar' : 'Crear'}</button>
         </form>
       )}
       <div className="card overflow-hidden">
@@ -81,7 +92,7 @@ export function GuardiansPage() {
                   <td className="p-3">{guardian.relationship}</td>
                   <td className="p-3">{guardian.is_active ? 'Activo' : 'Inactivo'}</td>
                   <td className="flex gap-2 p-3">
-                    {canEdit && <button className="btn-secondary" onClick={() => { setEditingId(guardian.id); setForm({ full_name: guardian.full_name, phone: guardian.phone, relationship: guardian.relationship ?? '', is_active: guardian.is_active }); }}><Pencil size={16} /></button>}
+                    {canEdit && <button className="btn-secondary" onClick={() => { setEditingId(guardian.id); setForm({ first_name: guardian.first_name, middle_name: guardian.middle_name ?? '', last_name: guardian.last_name, second_surname: guardian.second_surname ?? '', phone: guardian.phone, relationship: guardian.relationship ?? '', is_active: guardian.is_active }); }}><Pencil size={16} /></button>}
                     {canEdit && <button className="btn-danger" onClick={() => removeGuardian(guardian.id)}><Trash2 size={16} /></button>}
                   </td>
                 </tr>

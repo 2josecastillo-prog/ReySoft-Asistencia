@@ -4,10 +4,10 @@ from sqlalchemy import Boolean, ForeignKey, Index, String, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship as orm_relationship
 
 from app.database.base import Base
-from app.models.mixins import TimestampMixin
+from app.models.mixins import PersonNameMixin, TimestampMixin
 
 
-class Guardian(TimestampMixin, Base):
+class Guardian(PersonNameMixin, TimestampMixin, Base):
     __tablename__ = "guardians"
     __table_args__ = (Index("idx_guardians_organization_id", "organization_id"),)
 
@@ -15,7 +15,6 @@ class Guardian(TimestampMixin, Base):
     organization_id: Mapped[uuid.UUID] = mapped_column(
         Uuid, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False
     )
-    full_name: Mapped[str] = mapped_column(String(150), nullable=False)
     phone: Mapped[str] = mapped_column(String(30), nullable=False)
     relationship: Mapped[str | None] = mapped_column(String(50))
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)

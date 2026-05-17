@@ -1,11 +1,15 @@
 from datetime import date, datetime
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from typing import Any
+
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
 
 from app.models.enums import NotificationType, OrganizationStatus, SubscriptionStatus
+from app.schemas.name import legacy_admin_full_name_to_parts
 from app.schemas.organization import HEX_COLOR_PATTERN, OrganizationResponse
 from app.schemas.user import UserResponse
+from app.utils.names import normalize_name_part
 
 
 class ActivationRequest(BaseModel):
@@ -17,7 +21,10 @@ class AdminCreateOrganizationRequest(BaseModel):
     organization_name: str = Field(min_length=2, max_length=150)
     organization_email: EmailStr
     organization_phone: str = Field(min_length=7, max_length=30)
-    admin_full_name: str = Field(min_length=2, max_length=150)
+    admin_first_name: str = Field(min_length=1, max_length=80)
+    admin_middle_name: str | None = Field(default=None, max_length=80)
+    admin_last_name: str = Field(min_length=1, max_length=80)
+    admin_second_surname: str | None = Field(default=None, max_length=80)
     admin_email: EmailStr
     password: str = Field(min_length=8, max_length=72)
     primary_color: str | None = Field(default=None, pattern=HEX_COLOR_PATTERN)
@@ -25,6 +32,24 @@ class AdminCreateOrganizationRequest(BaseModel):
     accent_color: str | None = Field(default=None, pattern=HEX_COLOR_PATTERN)
     footer_text: str | None = Field(default=None, max_length=500)
     status: OrganizationStatus = OrganizationStatus.active
+
+    @model_validator(mode="before")
+    @classmethod
+    def accept_legacy_admin_full_name(cls, data: Any) -> Any:
+        return legacy_admin_full_name_to_parts(data)
+
+    @field_validator("admin_first_name", "admin_last_name")
+    @classmethod
+    def clean_required_name(cls, value: str) -> str:
+        cleaned = normalize_name_part(value)
+        if not cleaned:
+            raise ValueError("Este campo es obligatorio.")
+        return cleaned
+
+    @field_validator("admin_middle_name", "admin_second_surname")
+    @classmethod
+    def clean_optional_name(cls, value: str | None) -> str | None:
+        return normalize_name_part(value)
 
 
 class AdminUpdateOrganizationRequest(BaseModel):

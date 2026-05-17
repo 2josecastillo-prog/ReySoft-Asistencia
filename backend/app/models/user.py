@@ -6,10 +6,10 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
 from app.models.enums import UserRole
-from app.models.mixins import TimestampMixin
+from app.models.mixins import PersonNameMixin, TimestampMixin
 
 
-class User(TimestampMixin, Base):
+class User(PersonNameMixin, TimestampMixin, Base):
     __tablename__ = "users"
     __table_args__ = (
         CheckConstraint(
@@ -26,7 +26,6 @@ class User(TimestampMixin, Base):
     organization_id: Mapped[uuid.UUID | None] = mapped_column(
         Uuid, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=True
     )
-    full_name: Mapped[str] = mapped_column(String(150), nullable=False)
     email: Mapped[str] = mapped_column(String(150), nullable=False)
     password_hash: Mapped[str] = mapped_column(Text, nullable=False)
     role: Mapped[UserRole] = mapped_column(
