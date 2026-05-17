@@ -84,20 +84,24 @@ export function ReportsPage() {
     }
   }
 
-  async function exportReport(kind: 'students' | 'courses') {
+  async function exportReport(kind: 'students' | 'courses', fileFormat: 'xlsx' | 'pdf') {
     setError('');
     try {
       const response = await api.get(`/reports/attendance/${kind}/export`, {
-        params,
+        params: { ...params, file_format: fileFormat },
         responseType: 'blob'
       });
       const blob = new Blob([response.data], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        type: fileFormat === 'pdf'
+          ? 'application/pdf'
+          : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
       });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = kind === 'students' ? 'reporte-asistencia-estudiantes.xlsx' : 'reporte-asistencia-cursos.xlsx';
+      link.download = kind === 'students'
+        ? `reporte-asistencia-estudiantes.${fileFormat}`
+        : `reporte-asistencia-cursos.${fileFormat}`;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -137,9 +141,13 @@ export function ReportsPage() {
               Por curso
             </button>
           </div>
-          <button className="btn-secondary" type="button" onClick={() => exportReport(view)}>
+          <button className="btn-secondary" type="button" onClick={() => exportReport(view, 'xlsx')}>
             <Download size={16} />
             Exportar Excel
+          </button>
+          <button className="btn-secondary" type="button" onClick={() => exportReport(view, 'pdf')}>
+            <Download size={16} />
+            Exportar PDF
           </button>
         </div>
       </div>

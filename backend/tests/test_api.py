@@ -881,6 +881,28 @@ def test_attendance_reports_export_institutional_excel(client: TestClient):
     assert courses_summary["H7"].value == 0
     assert courses_summary["I7"].value == 0
 
+    students_pdf = client.get(
+        "/reports/attendance/students/export",
+        params={**params, "file_format": "pdf"},
+        headers=headers,
+    )
+    assert students_pdf.status_code == 200, students_pdf.text
+    assert students_pdf.headers["content-type"].startswith("application/pdf")
+    assert "reporte-asistencia-estudiantes.pdf" in students_pdf.headers["content-disposition"]
+    assert students_pdf.content.startswith(b"%PDF")
+    assert len(students_pdf.content) > 1000
+
+    courses_pdf = client.get(
+        "/reports/attendance/courses/export",
+        params={**params, "file_format": "pdf"},
+        headers=headers,
+    )
+    assert courses_pdf.status_code == 200, courses_pdf.text
+    assert courses_pdf.headers["content-type"].startswith("application/pdf")
+    assert "reporte-asistencia-cursos.pdf" in courses_pdf.headers["content-disposition"]
+    assert courses_pdf.content.startswith(b"%PDF")
+    assert len(courses_pdf.content) > 1000
+
 
 def test_parent_logs_in_with_phone_and_sees_only_their_students_attendance(client: TestClient):
     organization = create_school_by_super_admin(client)

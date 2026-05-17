@@ -376,7 +376,7 @@ RN-103. Los reportes permiten filtros por:
 - curso
 - incluir o excluir estudiantes inactivos
 
-RN-103.1. Los reportes por estudiante y por curso se pueden exportar en `.xlsx` con formato institucional.
+RN-103.1. Los reportes por estudiante y por curso se pueden exportar en `.xlsx` y `.pdf` con formato institucional.
 
 RN-103.2. La exportacion institucional debe incluir:
 

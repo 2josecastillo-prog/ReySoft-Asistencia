@@ -1,5 +1,6 @@
 from collections import Counter, defaultdict
 from datetime import date
+from typing import Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -13,8 +14,11 @@ from app.dependencies.auth import get_current_user
 from app.models import AttendanceRecord, AttendanceStatus, Student, User
 from app.schemas.report import AttendanceCourseReport, AttendanceReportRecord, AttendanceStudentReport
 from app.services.report_exports import (
+    PDF_MIME_TYPE,
     REPORT_MIME_TYPE,
+    build_course_report_pdf,
     build_course_report_workbook,
+    build_student_report_pdf,
     build_student_report_workbook,
 )
 from app.utils.names import name_sort_columns
@@ -193,11 +197,19 @@ def export_attendance_by_student(
     end_date: date | None = None,
     course_id: UUID | None = None,
     include_inactive: bool = False,
+    file_format: Literal["xlsx", "pdf"] = "xlsx",
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     ensure_school_user(current_user)
     rows = _build_student_reports(db, current_user, start_date, end_date, course_id, include_inactive)
+    if file_format == "pdf":
+        stream = build_student_report_pdf(current_user.organization, rows, start_date, end_date)
+        return StreamingResponse(
+            stream,
+            media_type=PDF_MIME_TYPE,
+            headers={"Content-Disposition": 'attachment; filename="reporte-asistencia-estudiantes.pdf"'},
+        )
     stream = build_student_report_workbook(current_user.organization, rows, start_date, end_date)
     return StreamingResponse(
         stream,
@@ -225,11 +237,19 @@ def export_attendance_by_course(
     end_date: date | None = None,
     course_id: UUID | None = None,
     include_inactive: bool = False,
+    file_format: Literal["xlsx", "pdf"] = "xlsx",
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     ensure_school_user(current_user)
     rows = _build_course_reports(db, current_user, start_date, end_date, course_id, include_inactive)
+    if file_format == "pdf":
+        stream = build_course_report_pdf(current_user.organization, rows, start_date, end_date)
+        return StreamingResponse(
+            stream,
+            media_type=PDF_MIME_TYPE,
+            headers={"Content-Disposition": 'attachment; filename="reporte-asistencia-cursos.pdf"'},
+        )
     stream = build_course_report_workbook(current_user.organization, rows, start_date, end_date)
     return StreamingResponse(
         stream,

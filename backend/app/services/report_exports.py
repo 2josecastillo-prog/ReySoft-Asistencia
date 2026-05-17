@@ -5,11 +5,19 @@ from io import BytesIO
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
+from reportlab.lib import colors
+from reportlab.lib.colors import HexColor
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.units import cm
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 from app.models import Organization
 from app.schemas.report import AttendanceCourseReport, AttendanceReportRecord, AttendanceStudentReport
 
 REPORT_MIME_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+PDF_MIME_TYPE = "application/pdf"
 
 STATUS_LABELS = {
     "arrived": "Llegó",
@@ -45,6 +53,15 @@ def _argb(hex_color: str | None, fallback: str = "2563EB") -> str:
     if len(cleaned) != 6:
         cleaned = fallback
     return f"FF{cleaned.upper()}"
+
+
+def _pdf_color(hex_color: str | None, fallback: str = "2563EB"):
+    cleaned = (hex_color or fallback).strip()
+    if not cleaned.startswith("#"):
+        cleaned = f"#{cleaned}"
+    if len(cleaned) != 7:
+        cleaned = f"#{fallback}"
+    return HexColor(cleaned)
 
 
 def _course_label(name: str, section: str | None, academic_year: str | None) -> str:
@@ -160,6 +177,204 @@ def _workbook_bytes(workbook: Workbook) -> BytesIO:
     workbook.save(stream)
     stream.seek(0)
     return stream
+
+
+def _pdf_styles(organization: Organization):
+    base = getSampleStyleSheet()
+    primary = _pdf_color(organization.primary_color)
+    secondary = _pdf_color(organization.secondary_color, fallback="1E293B")
+    return {
+        "title": ParagraphStyle(
+            "ReportTitle",
+            parent=base["Title"],
+            fontName="Helvetica-Bold",
+            fontSize=16,
+            leading=20,
+            textColor=primary,
+            alignment=TA_LEFT,
+            spaceAfter=4,
+        ),
+        "subtitle": ParagraphStyle(
+            "ReportSubtitle",
+            parent=base["Normal"],
+            fontName="Helvetica-Bold",
+            fontSize=10,
+            leading=13,
+            textColor=secondary,
+            alignment=TA_LEFT,
+        ),
+        "meta": ParagraphStyle(
+            "ReportMeta",
+            parent=base["Normal"],
+            fontSize=8,
+            leading=10,
+            textColor=colors.HexColor("#475569"),
+        ),
+        "cell": ParagraphStyle(
+            "ReportCell",
+            parent=base["Normal"],
+            fontSize=7,
+            leading=9,
+            alignment=TA_LEFT,
+        ),
+        "center_cell": ParagraphStyle(
+            "ReportCenterCell",
+            parent=base["Normal"],
+            fontSize=7,
+            leading=9,
+            alignment=TA_CENTER,
+        ),
+    }
+
+
+def _paragraph(value, style: ParagraphStyle) -> Paragraph:
+    text = "" if value is None else str(value)
+    return Paragraph(text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;"), style)
+
+
+def _pdf_table(data: list[list], organization: Organization, widths: list[float]) -> Table:
+    table = Table(data, repeatRows=1, colWidths=widths)
+    style = TableStyle(
+        [
+            ("BACKGROUND", (0, 0), (-1, 0), _pdf_color(organization.primary_color)),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("FONTSIZE", (0, 0), (-1, 0), 7),
+            ("ALIGN", (0, 0), (-1, 0), "CENTER"),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#CBD5E1")),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F8FAFC")]),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+            ("TOPPADDING", (0, 0), (-1, -1), 5),
+        ]
+    )
+    table.setStyle(style)
+    return table
+
+
+def _add_pdf_header(story: list, organization: Organization, start_date: date | None, end_date: date | None) -> None:
+    styles = _pdf_styles(organization)
+    story.append(_paragraph("Reporte institucional de asistencia", styles["title"]))
+    story.append(_paragraph(organization.name, styles["subtitle"]))
+    story.append(_paragraph(_period_label(start_date, end_date), styles["meta"]))
+    story.append(_paragraph(f"Generado: {datetime.now().strftime('%Y-%m-%d %H:%M')}", styles["meta"]))
+    story.append(Spacer(1, 0.28 * cm))
+
+
+def _risk_label_paragraph(risk_level: str, styles: dict[str, ParagraphStyle]) -> Paragraph:
+    return _paragraph(RISK_LABELS.get(risk_level, risk_level), styles["center_cell"])
+
+
+def _build_pdf(story: list) -> BytesIO:
+    stream = BytesIO()
+    document = SimpleDocTemplate(
+        stream,
+        pagesize=landscape(A4),
+        leftMargin=1.0 * cm,
+        rightMargin=1.0 * cm,
+        topMargin=1.0 * cm,
+        bottomMargin=1.0 * cm,
+    )
+    document.build(story)
+    stream.seek(0)
+    return stream
+
+
+def build_student_report_pdf(
+    organization: Organization,
+    rows: list[AttendanceStudentReport],
+    start_date: date | None,
+    end_date: date | None,
+) -> BytesIO:
+    styles = _pdf_styles(organization)
+    story: list = []
+    _add_pdf_header(story, organization, start_date, end_date)
+
+    summary_headers = ["Estudiante", "Codigo", "Curso", "Aus. eq.", "Aus.", "Exc.", "Conv.", "Tardes", "Nivel", "Reg."]
+    summary_data = [[_paragraph(header, styles["center_cell"]) for header in summary_headers]]
+    detail_data = [[_paragraph(header, styles["center_cell"]) for header in ["Fecha", "Estudiante", "Curso", "Estado", "Hora", "Notas"]]]
+    for row in rows:
+        course = _course_label(row.course_name, row.course_section, row.course_academic_year)
+        summary_data.append(
+            [
+                _paragraph(row.student_name, styles["cell"]),
+                _paragraph(row.student_code, styles["center_cell"]),
+                _paragraph(course, styles["cell"]),
+                _paragraph(row.equivalent_absences, styles["center_cell"]),
+                _paragraph(row.absent_count, styles["center_cell"]),
+                _paragraph(row.excused_count, styles["center_cell"]),
+                _paragraph(row.excused_absence_equivalent, styles["center_cell"]),
+                _paragraph(row.late_count, styles["center_cell"]),
+                _risk_label_paragraph(row.risk_level, styles),
+                _paragraph(row.total_records, styles["center_cell"]),
+            ]
+        )
+        for record in row.records:
+            detail_data.append(
+                [
+                    _paragraph(record.attendance_date.isoformat(), styles["center_cell"]),
+                    _paragraph(record.student_name, styles["cell"]),
+                    _paragraph(course, styles["cell"]),
+                    _paragraph(STATUS_LABELS.get(record.status, record.status), styles["center_cell"]),
+                    _paragraph(_time_label(record.display_time), styles["center_cell"]),
+                    _paragraph(record.notes, styles["cell"]),
+                ]
+            )
+
+    story.append(_pdf_table(summary_data, organization, [4.5 * cm, 2.0 * cm, 4.0 * cm, 1.6 * cm, 1.3 * cm, 1.3 * cm, 1.4 * cm, 1.5 * cm, 1.7 * cm, 1.2 * cm]))
+    story.append(Spacer(1, 0.35 * cm))
+    story.append(_paragraph("Detalle de asistencia", styles["subtitle"]))
+    story.append(_pdf_table(detail_data, organization, [2.2 * cm, 4.5 * cm, 4.2 * cm, 2.5 * cm, 1.7 * cm, 9.0 * cm]))
+    return _build_pdf(story)
+
+
+def build_course_report_pdf(
+    organization: Organization,
+    rows: list[AttendanceCourseReport],
+    start_date: date | None,
+    end_date: date | None,
+) -> BytesIO:
+    styles = _pdf_styles(organization)
+    story: list = []
+    _add_pdf_header(story, organization, start_date, end_date)
+
+    summary_headers = ["Curso", "Est.", "Aus. eq.", "Aus.", "Exc.", "Conv.", "Tardes", "Atencion", "Alto", "Nivel", "Reg."]
+    summary_data = [[_paragraph(header, styles["center_cell"]) for header in summary_headers]]
+    detail_data = [[_paragraph(header, styles["center_cell"]) for header in ["Fecha", "Estudiante", "Curso", "Estado", "Hora", "Notas"]]]
+    for row in rows:
+        course = _course_label(row.course_name, row.course_section, row.course_academic_year)
+        summary_data.append(
+            [
+                _paragraph(course, styles["cell"]),
+                _paragraph(row.student_count, styles["center_cell"]),
+                _paragraph(row.equivalent_absences, styles["center_cell"]),
+                _paragraph(row.absent_count, styles["center_cell"]),
+                _paragraph(row.excused_count, styles["center_cell"]),
+                _paragraph(row.excused_absence_equivalent, styles["center_cell"]),
+                _paragraph(row.late_count, styles["center_cell"]),
+                _paragraph(row.warning_students, styles["center_cell"]),
+                _paragraph(row.danger_students, styles["center_cell"]),
+                _risk_label_paragraph(row.risk_level, styles),
+                _paragraph(row.total_records, styles["center_cell"]),
+            ]
+        )
+        for record in row.records:
+            detail_data.append(
+                [
+                    _paragraph(record.attendance_date.isoformat(), styles["center_cell"]),
+                    _paragraph(record.student_name, styles["cell"]),
+                    _paragraph(course, styles["cell"]),
+                    _paragraph(STATUS_LABELS.get(record.status, record.status), styles["center_cell"]),
+                    _paragraph(_time_label(record.display_time), styles["center_cell"]),
+                    _paragraph(record.notes, styles["cell"]),
+                ]
+            )
+
+    story.append(_pdf_table(summary_data, organization, [4.8 * cm, 1.2 * cm, 1.6 * cm, 1.2 * cm, 1.2 * cm, 1.4 * cm, 1.4 * cm, 1.7 * cm, 1.2 * cm, 1.7 * cm, 1.2 * cm]))
+    story.append(Spacer(1, 0.35 * cm))
+    story.append(_paragraph("Detalle de asistencia", styles["subtitle"]))
+    story.append(_pdf_table(detail_data, organization, [2.2 * cm, 4.5 * cm, 4.2 * cm, 2.5 * cm, 1.7 * cm, 9.0 * cm]))
+    return _build_pdf(story)
 
 
 def build_student_report_workbook(

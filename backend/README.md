@@ -60,7 +60,7 @@ Los logos se suben como archivos `PNG`, `JPG` o `WEBP`. En local el backend los 
 
 La importacion/exportacion de estudiantes acepta `.xlsx` y CSV compatible con Excel. Para exportar CSV usa `GET /students/export?file_format=csv`; el CSV se genera en UTF-8 con BOM para abrir acentos correctamente en Excel.
 
-Los reportes de asistencia por estudiante y por curso se exportan en `.xlsx` institucional con resumen, detalle, colores del centro, fechas, horas, estados y niveles de riesgo.
+Los reportes de asistencia por estudiante y por curso se exportan en `.xlsx` o `.pdf` institucional con resumen, detalle, colores del centro, fechas, horas, estados y niveles de riesgo. Usa `file_format=pdf` para descargar PDF.
 
 ## Vercel + Supabase
 
