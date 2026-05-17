@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
+from app.core.security_headers import SecurityHeadersMiddleware
 from app.routes import admin, attendance, auth, courses, dashboard, guardians, organization, parents, reports, students, users, whatsapp
 
 
@@ -17,9 +18,10 @@ def create_app() -> FastAPI:
         CORSMiddleware,
         allow_origins=settings.cors_origin_list,
         allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type", "Accept", "X-Requested-With"],
     )
+    app.add_middleware(SecurityHeadersMiddleware)
 
     app.include_router(auth.router)
     app.include_router(admin.router)

@@ -1,6 +1,8 @@
 import csv
+import json
 from datetime import date, timedelta
 from io import BytesIO, StringIO
+from pathlib import Path
 
 from fastapi.testclient import TestClient
 from jose import jwt
@@ -13,6 +15,36 @@ def auth_headers(client: TestClient, email: str, password: str) -> dict[str, str
     response = client.post("/auth/login", json={"email": email, "password": password})
     assert response.status_code == 200, response.text
     return {"Authorization": f"Bearer {response.json()['access_token']}"}
+
+
+def test_api_security_headers_and_sensitive_cache_policy(client: TestClient):
+    response = client.get("/auth/me")
+
+    assert response.status_code == 401
+    assert response.headers["x-content-type-options"] == "nosniff"
+    assert response.headers["x-frame-options"] == "DENY"
+    assert response.headers["referrer-policy"] == "strict-origin-when-cross-origin"
+    assert "camera=()" in response.headers["permissions-policy"]
+    assert "frame-ancestors 'none'" in response.headers["content-security-policy"]
+    assert response.headers["cache-control"] == "no-store"
+    assert response.headers["pragma"] == "no-cache"
+
+
+def test_vercel_frontend_security_headers_are_configured():
+    config_path = Path(__file__).resolve().parents[2] / "vercel.json"
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    header_groups = config.get("headers", [])
+    headers = {
+        header["key"].lower(): header["value"]
+        for group in header_groups
+        for header in group.get("headers", [])
+    }
+
+    assert headers["x-content-type-options"] == "nosniff"
+    assert headers["x-frame-options"] == "DENY"
+    assert headers["referrer-policy"] == "strict-origin-when-cross-origin"
+    assert "camera=()" in headers["permissions-policy"]
+    assert "frame-ancestors 'none'" in headers["content-security-policy"]
 
 
 def create_school_by_super_admin(client: TestClient, suffix: str = "one", status: str = "active") -> dict:
