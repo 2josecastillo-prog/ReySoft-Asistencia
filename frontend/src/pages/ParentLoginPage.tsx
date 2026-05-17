@@ -1,5 +1,5 @@
 import { FormEvent, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { Phone } from 'lucide-react';
 import { extractError, parentApi } from '../api/client';
 import { ProjectLogo } from '../components/ProjectLogo';
@@ -7,6 +7,7 @@ import { ParentLoginResponse } from '../types';
 
 export function ParentLoginPage() {
   const navigate = useNavigate();
+  const hasParentToken = Boolean(localStorage.getItem('reysoft_asistencia_parent_token'));
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -25,6 +26,8 @@ export function ParentLoginPage() {
       setLoading(false);
     }
   }
+
+  if (hasParentToken) return <Navigate to="/parents" replace />;
 
   return (
     <main className="grid min-h-screen place-items-center bg-slate-50 px-4">

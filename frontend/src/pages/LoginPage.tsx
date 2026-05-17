@@ -1,12 +1,12 @@
 import { FormEvent, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { extractError } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import { ProjectLogo } from '../components/ProjectLogo';
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { loading: authLoading, login, user } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -25,6 +25,9 @@ export function LoginPage() {
       setLoading(false);
     }
   }
+
+  if (authLoading) return <div className="p-8 text-sm text-slate-600">Cargando...</div>;
+  if (user) return <Navigate to={user.role === 'super_admin' ? '/admin' : '/dashboard'} replace />;
 
   return (
     <main className="grid min-h-screen place-items-center bg-slate-50 px-4">
