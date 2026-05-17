@@ -42,7 +42,9 @@ pytest
 - `POST /students/import`
 - `/attendance`
 - `/reports/attendance/students`
+- `GET /reports/attendance/students/export`
 - `/reports/attendance/courses`
+- `GET /reports/attendance/courses/export`
 - `POST /parents/login`
 - `GET /parents/me`
 - `GET /parents/students`
@@ -57,6 +59,8 @@ Los centros educativos ya no se registran desde una ruta publica. El `super_admi
 Los logos se suben como archivos `PNG`, `JPG` o `WEBP`. En local el backend los guarda en `UPLOAD_DIR/logos` y devuelve una ruta publica `/uploads/logos/...`. En Vercel debe usarse `STORAGE_BACKEND=supabase` para guardarlos en Supabase Storage. Cada centro tambien puede tener un texto de pie de pagina configurable desde su configuracion o al ser creado por el `super_admin`.
 
 La importacion/exportacion de estudiantes acepta `.xlsx` y CSV compatible con Excel. Para exportar CSV usa `GET /students/export?file_format=csv`; el CSV se genera en UTF-8 con BOM para abrir acentos correctamente en Excel.
+
+Los reportes de asistencia por estudiante y por curso se exportan en `.xlsx` institucional con resumen, detalle, colores del centro, fechas, horas, estados y niveles de riesgo.
 
 ## Vercel + Supabase
 

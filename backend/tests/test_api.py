@@ -827,6 +827,61 @@ def test_attendance_reports_apply_excuse_conversion_and_risk_colors(client: Test
     assert course_row["records"][0]["status"] == "absent"
 
 
+def test_attendance_reports_export_institutional_excel(client: TestClient):
+    organization = create_school_by_super_admin(client)
+    activate_school(client, organization["id"])
+    headers = auth_headers(client, "admin-one@example.com", "SchoolAdmin123!")
+    course, _, student = create_school_basics(client, headers)
+
+    for payload in [
+        {"attendance_date": "2026-05-01", "status": "absent"},
+        {"attendance_date": "2026-05-02", "status": "late", "arrival_time": "08:10:00"},
+        {"attendance_date": "2026-05-03", "status": "excused"},
+        {"attendance_date": "2026-05-04", "status": "excused"},
+        {"attendance_date": "2026-05-05", "status": "excused"},
+    ]:
+        response = client.post("/attendance", json={"student_id": student["id"], **payload}, headers=headers)
+        assert response.status_code == 201, response.text
+
+    params = {"start_date": "2026-05-01", "end_date": "2026-05-31"}
+    students_export = client.get("/reports/attendance/students/export", params=params, headers=headers)
+    assert students_export.status_code == 200, students_export.text
+    assert students_export.headers["content-type"].startswith(
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    assert "reporte-asistencia-estudiantes.xlsx" in students_export.headers["content-disposition"]
+
+    students_workbook = load_workbook(BytesIO(students_export.content))
+    assert students_workbook.sheetnames == ["Resumen por estudiante", "Detalle"]
+    students_summary = students_workbook["Resumen por estudiante"]
+    assert students_summary["A1"].value == "Reporte institucional de asistencia"
+    assert students_summary["A2"].value == organization["name"]
+    assert students_summary["A6"].value == "Estudiante"
+    assert students_summary["A6"].fill.fgColor.rgb == "FF2563EB"
+    assert students_summary["A7"].value == student["full_name"]
+    assert students_summary["D7"].value == 2
+    assert students_summary["G7"].value == 1
+    assert students_summary["I7"].value == "Bajo"
+
+    students_detail = students_workbook["Detalle"]
+    detail_rows = list(students_detail.iter_rows(min_row=7, values_only=True))
+    assert ("2026-05-02", student["full_name"], "Primero A 2026-2027", "Tarde", "08:10", None) in detail_rows
+
+    courses_export = client.get("/reports/attendance/courses/export", params=params, headers=headers)
+    assert courses_export.status_code == 200, courses_export.text
+    assert "reporte-asistencia-cursos.xlsx" in courses_export.headers["content-disposition"]
+
+    courses_workbook = load_workbook(BytesIO(courses_export.content))
+    assert courses_workbook.sheetnames == ["Resumen por curso", "Detalle"]
+    courses_summary = courses_workbook["Resumen por curso"]
+    assert courses_summary["A1"].value == "Reporte institucional de asistencia"
+    assert courses_summary["A7"].value == "Primero A 2026-2027"
+    assert courses_summary["B7"].value == 1
+    assert courses_summary["C7"].value == 2
+    assert courses_summary["H7"].value == 0
+    assert courses_summary["I7"].value == 0
+
+
 def test_parent_logs_in_with_phone_and_sees_only_their_students_attendance(client: TestClient):
     organization = create_school_by_super_admin(client)
     activate_school(client, organization["id"])

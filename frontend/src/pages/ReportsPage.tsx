@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AlertTriangle, BarChart3, Filter, GraduationCap } from 'lucide-react';
+import { AlertTriangle, BarChart3, Download, Filter, GraduationCap } from 'lucide-react';
 import { api, extractError } from '../api/client';
 import { EmptyState } from '../components/EmptyState';
 import { StatusBadge } from '../components/StatusBadge';
@@ -84,6 +84,29 @@ export function ReportsPage() {
     }
   }
 
+  async function exportReport(kind: 'students' | 'courses') {
+    setError('');
+    try {
+      const response = await api.get(`/reports/attendance/${kind}/export`, {
+        params,
+        responseType: 'blob'
+      });
+      const blob = new Blob([response.data], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = kind === 'students' ? 'reporte-asistencia-estudiantes.xlsx' : 'reporte-asistencia-cursos.xlsx';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      setError(extractError(err));
+    }
+  }
+
   useEffect(() => {
     loadReports();
   }, []);
@@ -105,12 +128,18 @@ export function ReportsPage() {
           <h2 className="text-xl font-semibold">Reportes de asistencia</h2>
           <p className="mt-1 text-sm text-slate-500">Cada 3 excusas cuentan como 1 ausencia equivalente.</p>
         </div>
-        <div className="inline-flex rounded-md border border-slate-200 bg-white p-1">
-          <button className={`rounded px-3 py-1.5 text-sm font-semibold ${view === 'students' ? 'bg-slate-900 text-white' : 'text-slate-600'}`} onClick={() => setView('students')}>
-            Por estudiante
-          </button>
-          <button className={`rounded px-3 py-1.5 text-sm font-semibold ${view === 'courses' ? 'bg-slate-900 text-white' : 'text-slate-600'}`} onClick={() => setView('courses')}>
-            Por curso
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="inline-flex rounded-md border border-slate-200 bg-white p-1">
+            <button className={`rounded px-3 py-1.5 text-sm font-semibold ${view === 'students' ? 'bg-slate-900 text-white' : 'text-slate-600'}`} onClick={() => setView('students')}>
+              Por estudiante
+            </button>
+            <button className={`rounded px-3 py-1.5 text-sm font-semibold ${view === 'courses' ? 'bg-slate-900 text-white' : 'text-slate-600'}`} onClick={() => setView('courses')}>
+              Por curso
+            </button>
+          </div>
+          <button className="btn-secondary" type="button" onClick={() => exportReport(view)}>
+            <Download size={16} />
+            Exportar Excel
           </button>
         </div>
       </div>

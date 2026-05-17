@@ -3,6 +3,7 @@ from datetime import date
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
+from fastapi.responses import StreamingResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
@@ -11,6 +12,11 @@ from app.database.session import get_db
 from app.dependencies.auth import get_current_user
 from app.models import AttendanceRecord, AttendanceStatus, Student, User
 from app.schemas.report import AttendanceCourseReport, AttendanceReportRecord, AttendanceStudentReport
+from app.services.report_exports import (
+    REPORT_MIME_TYPE,
+    build_course_report_workbook,
+    build_student_report_workbook,
+)
 from app.utils.names import name_sort_columns
 
 router = APIRouter(prefix="/reports", tags=["reports"])
@@ -119,29 +125,14 @@ def _build_student_reports(
     return sorted(reports, key=lambda row: (-row.equivalent_absences, row.student_name))
 
 
-@router.get("/attendance/students", response_model=list[AttendanceStudentReport])
-def attendance_by_student(
-    start_date: date | None = None,
-    end_date: date | None = None,
-    course_id: UUID | None = None,
-    include_inactive: bool = False,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    ensure_school_user(current_user)
-    return _build_student_reports(db, current_user, start_date, end_date, course_id, include_inactive)
-
-
-@router.get("/attendance/courses", response_model=list[AttendanceCourseReport])
-def attendance_by_course(
-    start_date: date | None = None,
-    end_date: date | None = None,
-    course_id: UUID | None = None,
-    include_inactive: bool = False,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    ensure_school_user(current_user)
+def _build_course_reports(
+    db: Session,
+    current_user: User,
+    start_date: date | None,
+    end_date: date | None,
+    course_id: UUID | None,
+    include_inactive: bool,
+) -> list[AttendanceCourseReport]:
     student_reports = _build_student_reports(db, current_user, start_date, end_date, course_id, include_inactive)
     grouped: dict[UUID, list[AttendanceStudentReport]] = defaultdict(list)
     for report in student_reports:
@@ -181,3 +172,67 @@ def attendance_by_course(
             )
         )
     return sorted(course_reports, key=lambda row: (-row.equivalent_absences, row.course_name))
+
+
+@router.get("/attendance/students", response_model=list[AttendanceStudentReport])
+def attendance_by_student(
+    start_date: date | None = None,
+    end_date: date | None = None,
+    course_id: UUID | None = None,
+    include_inactive: bool = False,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    ensure_school_user(current_user)
+    return _build_student_reports(db, current_user, start_date, end_date, course_id, include_inactive)
+
+
+@router.get("/attendance/students/export")
+def export_attendance_by_student(
+    start_date: date | None = None,
+    end_date: date | None = None,
+    course_id: UUID | None = None,
+    include_inactive: bool = False,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    ensure_school_user(current_user)
+    rows = _build_student_reports(db, current_user, start_date, end_date, course_id, include_inactive)
+    stream = build_student_report_workbook(current_user.organization, rows, start_date, end_date)
+    return StreamingResponse(
+        stream,
+        media_type=REPORT_MIME_TYPE,
+        headers={"Content-Disposition": 'attachment; filename="reporte-asistencia-estudiantes.xlsx"'},
+    )
+
+
+@router.get("/attendance/courses", response_model=list[AttendanceCourseReport])
+def attendance_by_course(
+    start_date: date | None = None,
+    end_date: date | None = None,
+    course_id: UUID | None = None,
+    include_inactive: bool = False,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    ensure_school_user(current_user)
+    return _build_course_reports(db, current_user, start_date, end_date, course_id, include_inactive)
+
+
+@router.get("/attendance/courses/export")
+def export_attendance_by_course(
+    start_date: date | None = None,
+    end_date: date | None = None,
+    course_id: UUID | None = None,
+    include_inactive: bool = False,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    ensure_school_user(current_user)
+    rows = _build_course_reports(db, current_user, start_date, end_date, course_id, include_inactive)
+    stream = build_course_report_workbook(current_user.organization, rows, start_date, end_date)
+    return StreamingResponse(
+        stream,
+        media_type=REPORT_MIME_TYPE,
+        headers={"Content-Disposition": 'attachment; filename="reporte-asistencia-cursos.xlsx"'},
+    )
