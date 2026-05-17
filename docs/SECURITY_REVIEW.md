@@ -18,7 +18,7 @@ Trust boundaries:
 - Super admin API endpoints.
 - PostgreSQL persistence layer.
 - Local uploaded media storage.
-- Browser local storage containing JWT.
+- Browser session markers and HttpOnly authentication cookies.
 
 Attacker-controlled inputs:
 
@@ -51,6 +51,6 @@ No high-confidence exploitable cross-tenant, authentication bypass, password exp
 
 ## Residual Risks
 
-- JWT is stored in browser local storage; production deployments should pair this with strict HTTPS, CSP, short token lifetimes and careful XSS prevention. User tokens are invalidated when the related password changes.
+- JWT is delivered through `HttpOnly`, `Secure` in production, `SameSite=Lax` cookies and paired with short token lifetimes and careful XSS prevention. User tokens are invalidated when the related password changes.
 - Uploaded logos are stored on local disk; production deployments must persist and back up `UPLOAD_DIR`.
 - Parent access by phone only remains intentionally lightweight because OTP was removed by product decision.

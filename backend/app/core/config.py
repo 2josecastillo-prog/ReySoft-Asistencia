@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 30
     jwt_issuer: str = "reysoft-asistencia"
     jwt_audience: str = "reysoft-api"
+    auth_cookie_name: str = "reysoft_asistencia_token"
+    parent_auth_cookie_name: str = "reysoft_asistencia_parent_token"
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
     initial_super_admin_email: str = "superadmin@reysoft-asistencia.com"
     initial_super_admin_password: str = "SuperAdmin123!"

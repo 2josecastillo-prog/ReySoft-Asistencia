@@ -12,7 +12,7 @@ interface AuthContextValue {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<User>;
-  logout: () => void;
+  logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
 
@@ -26,15 +26,11 @@ function applyOrganizationTheme(user: User | null) {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem('reysoft_asistencia_token'));
+  const [token, setToken] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(Boolean(token));
+  const [loading, setLoading] = useState(true);
 
   async function refreshUser() {
-    if (!localStorage.getItem('reysoft_asistencia_token')) {
-      setLoading(false);
-      return;
-    }
     try {
       const response = await api.get<User>('/auth/me');
       setUser(response.data);
@@ -51,18 +47,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   async function login(email: string, password: string) {
     const response = await api.post<LoginResponse>('/auth/login', { email, password });
-    localStorage.setItem('reysoft_asistencia_token', response.data.access_token);
+    localStorage.removeItem('reysoft_asistencia_token');
     setToken(response.data.access_token);
     setUser(response.data.user);
     applyOrganizationTheme(response.data.user);
     return response.data.user;
   }
 
-  function logout() {
-    localStorage.removeItem('reysoft_asistencia_token');
-    setToken(null);
-    setUser(null);
-    applyOrganizationTheme(null);
+  async function logout() {
+    try {
+      await api.post('/auth/logout');
+    } finally {
+      localStorage.removeItem('reysoft_asistencia_token');
+      setToken(null);
+      setUser(null);
+      applyOrganizationTheme(null);
+    }
   }
 
   useEffect(() => {
@@ -82,4 +82,3 @@ export function useAuth() {
   if (!value) throw new Error('useAuth debe usarse dentro de AuthProvider');
   return value;
 }
-

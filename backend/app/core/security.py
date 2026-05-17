@@ -60,3 +60,25 @@ def decode_access_token(token: str) -> dict[str, Any]:
 def mark_password_changed(user: Any) -> None:
     user.password_changed_at = current_utc_naive()
     user.token_version = (user.token_version or 0) + 1
+
+
+def set_access_cookie(response: Any, cookie_name: str, token: str) -> None:
+    response.set_cookie(
+        key=cookie_name,
+        value=token,
+        max_age=settings.access_token_expire_minutes * 60,
+        httponly=True,
+        secure=settings.environment.lower() == "production",
+        samesite="lax",
+        path="/",
+    )
+
+
+def clear_access_cookie(response: Any, cookie_name: str) -> None:
+    response.delete_cookie(
+        key=cookie_name,
+        httponly=True,
+        secure=settings.environment.lower() == "production",
+        samesite="lax",
+        path="/",
+    )

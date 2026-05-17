@@ -1,11 +1,12 @@
 from datetime import date
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
-from app.core.security import create_access_token
+from app.core.config import settings
+from app.core.security import clear_access_cookie, create_access_token, set_access_cookie
 from app.database.session import get_db
 from app.dependencies.parent_auth import get_current_parent_guardian
 from app.models import AttendanceRecord, Guardian, Organization, OrganizationStatus, Student, StudentGuardian
@@ -86,14 +87,21 @@ def _attendance_response(record: AttendanceRecord, student_name: str) -> ParentA
 
 
 @router.post("/login", response_model=ParentTokenResponse)
-def parent_login(payload: ParentLoginRequest, db: Session = Depends(get_db)):
+def parent_login(payload: ParentLoginRequest, response: Response, db: Session = Depends(get_db)):
     phone = clean_phone_number(payload.phone)
     guardian = _find_active_guardian_by_phone(db, phone)
     if sync_expired_organization(db, guardian.organization):
         db.commit()
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="La cuenta del centro educativo expiro.")
     token = create_access_token(subject=str(guardian.id), extra_claims={"scope": "parent"})
+    set_access_cookie(response, settings.parent_auth_cookie_name, token)
     return {"access_token": token, "token_type": "bearer", "guardian": guardian}
+
+
+@router.post("/logout")
+def parent_logout(response: Response):
+    clear_access_cookie(response, settings.parent_auth_cookie_name)
+    return {"message": "Sesión cerrada."}
 
 
 @router.get("/me", response_model=ParentGuardianResponse)

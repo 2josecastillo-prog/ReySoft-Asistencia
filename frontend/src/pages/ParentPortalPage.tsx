@@ -16,7 +16,7 @@ function formatTime(value?: string | null) {
 
 export function ParentPortalPage() {
   const navigate = useNavigate();
-  const hasToken = Boolean(localStorage.getItem('reysoft_asistencia_parent_token'));
+  const hasParentSession = Boolean(localStorage.getItem('reysoft_asistencia_parent_session'));
   const [guardian, setGuardian] = useState<ParentGuardian | null>(null);
   const [students, setStudents] = useState<ParentStudent[]>([]);
   const [attendance, setAttendance] = useState<ParentAttendanceRecord[]>([]);
@@ -46,15 +46,21 @@ export function ParentPortalPage() {
       setAttendance(attendanceResponse.data);
     } catch (err) {
       localStorage.removeItem('reysoft_asistencia_parent_token');
+      localStorage.removeItem('reysoft_asistencia_parent_session');
       setError(extractError(err));
     } finally {
       setLoading(false);
     }
   }
 
-  function logout() {
-    localStorage.removeItem('reysoft_asistencia_parent_token');
-    navigate('/parents/login', { replace: true });
+  async function logout() {
+    try {
+      await parentApi.post('/parents/logout');
+    } finally {
+      localStorage.removeItem('reysoft_asistencia_parent_token');
+      localStorage.removeItem('reysoft_asistencia_parent_session');
+      navigate('/parents/login', { replace: true });
+    }
   }
 
   function onFilter(event: FormEvent) {
@@ -63,10 +69,10 @@ export function ParentPortalPage() {
   }
 
   useEffect(() => {
-    if (hasToken) loadPortal();
+    if (hasParentSession) loadPortal();
   }, []);
 
-  if (!hasToken) return <Navigate to="/parents/login" replace />;
+  if (!hasParentSession) return <Navigate to="/parents/login" replace />;
 
   return (
     <main className="flex min-h-screen flex-col bg-slate-50">

@@ -2,25 +2,9 @@ import axios from 'axios';
 
 const baseURL = import.meta.env.VITE_API_URL ?? (import.meta.env.PROD ? '/api' : 'http://localhost:8000');
 
-export const api = axios.create({ baseURL });
+export const api = axios.create({ baseURL, withCredentials: true });
 
-export const parentApi = axios.create({ baseURL });
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('reysoft_asistencia_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-parentApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem('reysoft_asistencia_parent_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+export const parentApi = axios.create({ baseURL, withCredentials: true });
 
 export function extractError(error: unknown): string {
   if (axios.isAxiosError(error)) {

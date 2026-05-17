@@ -1,10 +1,11 @@
 from uuid import UUID
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
+from app.core.config import settings
 from app.core.security import decode_access_token
 from app.database.session import get_db
 from app.dependencies.auth import bearer_scheme
@@ -13,13 +14,15 @@ from app.services.subscriptions import sync_expired_organization
 
 
 def get_current_parent_guardian(
+    request: Request,
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
     db: Session = Depends(get_db),
 ) -> Guardian:
-    if not credentials:
+    token = credentials.credentials if credentials else request.cookies.get(settings.parent_auth_cookie_name)
+    if not token:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token requerido.")
     try:
-        payload = decode_access_token(credentials.credentials)
+        payload = decode_access_token(token)
         if payload.get("typ") != "access" or payload.get("scope") != "parent":
             raise ValueError("Token inválido")
         guardian_id = UUID(str(payload["sub"]))

@@ -7,7 +7,7 @@ import { ParentLoginResponse } from '../types';
 
 export function ParentLoginPage() {
   const navigate = useNavigate();
-  const hasParentToken = Boolean(localStorage.getItem('reysoft_asistencia_parent_token'));
+  const hasParentSession = Boolean(localStorage.getItem('reysoft_asistencia_parent_session'));
   const [phone, setPhone] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,7 +18,8 @@ export function ParentLoginPage() {
     setError('');
     try {
       const response = await parentApi.post<ParentLoginResponse>('/parents/login', { phone });
-      localStorage.setItem('reysoft_asistencia_parent_token', response.data.access_token);
+      localStorage.removeItem('reysoft_asistencia_parent_token');
+      localStorage.setItem('reysoft_asistencia_parent_session', '1');
       navigate('/parents', { replace: true });
     } catch (err) {
       setError(extractError(err));
@@ -27,7 +28,7 @@ export function ParentLoginPage() {
     }
   }
 
-  if (hasParentToken) return <Navigate to="/parents" replace />;
+  if (hasParentSession) return <Navigate to="/parents" replace />;
 
   return (
     <main className="grid min-h-screen place-items-center bg-slate-50 px-4">

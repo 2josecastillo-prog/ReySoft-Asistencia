@@ -123,6 +123,28 @@ def test_user_login_token_has_standard_security_claims(client: TestClient):
     assert claims["exp"] - claims["iat"] == settings.access_token_expire_minutes * 60
 
 
+def test_user_login_sets_http_only_cookie_and_logout_clears_it(client: TestClient):
+    organization = create_school_by_super_admin(client)
+    activate_school(client, organization["id"])
+
+    login = client.post("/auth/login", json={"email": "admin-one@example.com", "password": "SchoolAdmin123!"})
+    assert login.status_code == 200, login.text
+    assert "reysoft_asistencia_token" in login.headers["set-cookie"]
+    assert "HttpOnly" in login.headers["set-cookie"]
+
+    me = client.get("/auth/me")
+    assert me.status_code == 200, me.text
+    assert me.json()["email"] == "admin-one@example.com"
+
+    logout = client.post("/auth/logout")
+    assert logout.status_code == 200, logout.text
+    assert "reysoft_asistencia_token" in logout.headers["set-cookie"]
+    assert "Max-Age=0" in logout.headers["set-cookie"]
+
+    blocked = client.get("/auth/me")
+    assert blocked.status_code == 401
+
+
 def test_expired_activation_auto_suspends_school_and_blocks_school_login(client: TestClient):
     organization = create_school_by_super_admin(client, status="pending")
     super_admin_headers = auth_headers(client, "superadmin@example.com", "SuperAdmin123!")
@@ -802,11 +824,13 @@ def test_parent_logs_in_with_phone_and_sees_only_their_students_attendance(clien
 
     login = client.post("/parents/login", json={"phone": "(809) 555-1234"})
     assert login.status_code == 200, login.text
+    assert "reysoft_asistencia_parent_token" in login.headers["set-cookie"]
+    assert "HttpOnly" in login.headers["set-cookie"]
     assert login.json()["guardian"]["id"] == guardian["id"]
     assert login.json()["guardian"]["phone"] == "8095551234"
     parent_headers = {"Authorization": f"Bearer {login.json()['access_token']}"}
 
-    me = client.get("/parents/me", headers=parent_headers)
+    me = client.get("/parents/me")
     assert me.status_code == 200, me.text
     assert me.json()["full_name"] == guardian["full_name"]
 
@@ -826,6 +850,13 @@ def test_parent_logs_in_with_phone_and_sees_only_their_students_attendance(clien
 
     wrong_phone = client.post("/parents/login", json={"phone": "809-000-0000"})
     assert wrong_phone.status_code == 401
+
+    logout = client.post("/parents/logout")
+    assert logout.status_code == 200, logout.text
+    assert "reysoft_asistencia_parent_token" in logout.headers["set-cookie"]
+    assert "Max-Age=0" in logout.headers["set-cookie"]
+    blocked_after_logout = client.get("/parents/me")
+    assert blocked_after_logout.status_code == 401
 
 
 def test_expired_activation_auto_suspends_school_and_blocks_parent_login(client: TestClient):

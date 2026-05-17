@@ -6,7 +6,7 @@ ReySoft-Asistencia is a SaaS application for educational centers. The central te
 
 - FastAPI exposes REST endpoints grouped by domain.
 - SQLAlchemy models mirror the official PostgreSQL schema and Alembic owns production DDL.
-- Authentication uses bcrypt password hashes and JWT bearer tokens.
+- Authentication uses bcrypt password hashes, short-lived JWTs and HttpOnly cookies, while still accepting bearer tokens for API compatibility.
 - Authorization is role-based: `super_admin`, `school_admin`, and `staff`.
 - School users must belong to an active organization before accessing protected school modules.
 - Important actions write audit logs with user, organization, entity and request metadata.
@@ -26,7 +26,7 @@ The schema is normalized to third normal form:
 ## Frontend
 
 - React, Vite, TypeScript and Tailwind CSS.
-- AuthContext stores the JWT, loads `/auth/me`, and applies organization colors through CSS variables.
+- AuthContext relies on the HttpOnly auth cookie, loads `/auth/me`, and applies organization colors through CSS variables.
 - Organization branding includes logo, colors and configurable footer text per school; the super admin can create and later edit the registered school profile.
 - Public routes: `/`, `/login`, `/parents/login`.
 - Super admin route: `/admin`.
