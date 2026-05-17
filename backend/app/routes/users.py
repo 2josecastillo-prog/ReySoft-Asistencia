@@ -5,7 +5,7 @@ from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from app.core.permissions import ensure_school_admin
-from app.core.security import hash_password
+from app.core.security import hash_password, mark_password_changed
 from app.database.session import get_db
 from app.dependencies.auth import get_current_user
 from app.models import User, UserRole
@@ -114,6 +114,7 @@ def update_staff_user(
         _ensure_email_available(db, update_data["email"], current_user_id=user.id)
     if "password" in update_data and update_data["password"]:
         user.password_hash = hash_password(update_data.pop("password"))
+        mark_password_changed(user)
     for field, value in update_data.items():
         setattr(user, field, value)
     create_audit_log(

@@ -15,7 +15,9 @@ class Settings(BaseSettings):
     )
     secret_key: str = Field(default="change-me-in-production")
     algorithm: str = "HS256"
-    access_token_expire_minutes: int = 60
+    access_token_expire_minutes: int = 30
+    jwt_issuer: str = "reysoft-asistencia"
+    jwt_audience: str = "reysoft-api"
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
     initial_super_admin_email: str = "superadmin@reysoft-asistencia.com"
     initial_super_admin_password: str = "SuperAdmin123!"

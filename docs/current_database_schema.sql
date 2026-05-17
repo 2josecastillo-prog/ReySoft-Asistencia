@@ -76,6 +76,8 @@ CREATE TABLE users (
     password_hash TEXT NOT NULL,
     role user_role NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    token_version INTEGER NOT NULL DEFAULT 0,
+    password_changed_at TIMESTAMP,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
 

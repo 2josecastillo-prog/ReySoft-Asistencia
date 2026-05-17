@@ -3,7 +3,10 @@ from datetime import date, timedelta
 from io import BytesIO, StringIO
 
 from fastapi.testclient import TestClient
+from jose import jwt
 from openpyxl import Workbook, load_workbook
+
+from app.core.config import settings
 
 
 def auth_headers(client: TestClient, email: str, password: str) -> dict[str, str]:
@@ -99,6 +102,25 @@ def test_super_admin_activates_school_and_school_admin_can_login(client: TestCli
     response = client.get("/auth/me", headers=headers)
     assert response.status_code == 200
     assert response.json()["organization"]["status"] == "active"
+
+
+def test_user_login_token_has_standard_security_claims(client: TestClient):
+    organization = create_school_by_super_admin(client)
+    activate_school(client, organization["id"])
+
+    response = client.post("/auth/login", json={"email": "admin-one@example.com", "password": "SchoolAdmin123!"})
+    assert response.status_code == 200, response.text
+
+    claims = jwt.get_unverified_claims(response.json()["access_token"])
+    assert claims["iss"] == settings.jwt_issuer
+    assert claims["aud"] == settings.jwt_audience
+    assert claims["typ"] == "access"
+    assert claims["role"] == "school_admin"
+    assert claims["token_version"] == 0
+    assert isinstance(claims["jti"], str)
+    assert isinstance(claims["iat"], int)
+    assert isinstance(claims["nbf"], int)
+    assert claims["exp"] - claims["iat"] == settings.access_token_expire_minutes * 60
 
 
 def test_expired_activation_auto_suspends_school_and_blocks_school_login(client: TestClient):
@@ -416,6 +438,9 @@ def test_super_admin_resets_school_admin_password(client: TestClient):
     assert response.json()["message"] == "Contraseña del administrador del centro actualizada."
     assert response.json()["admin_user"]["email"] == "admin-password@example.com"
     assert "password_hash" not in response.json()["admin_user"]
+
+    old_token_me = client.get("/auth/me", headers=old_school_headers)
+    assert old_token_me.status_code == 401
 
     old_login = client.post(
         "/auth/login",

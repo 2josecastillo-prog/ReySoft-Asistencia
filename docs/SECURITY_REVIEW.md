@@ -31,7 +31,7 @@ Attacker-controlled inputs:
 ## Controls Verified
 
 - Passwords are hashed with bcrypt and never returned in schemas.
-- JWT tokens include expiration and use `SECRET_KEY`.
+- JWT tokens include expiration, issuer, audience, issued-at, not-before, unique token ids and user token versions.
 - Production refuses the default `SECRET_KEY`.
 - School users must belong to an active organization.
 - Super admin can operate without `organization_id`.
@@ -51,6 +51,6 @@ No high-confidence exploitable cross-tenant, authentication bypass, password exp
 
 ## Residual Risks
 
-- JWT is stored in browser local storage; production deployments should pair this with strict HTTPS, CSP, short token lifetimes and careful XSS prevention.
+- JWT is stored in browser local storage; production deployments should pair this with strict HTTPS, CSP, short token lifetimes and careful XSS prevention. User tokens are invalidated when the related password changes.
 - Uploaded logos are stored on local disk; production deployments must persist and back up `UPLOAD_DIR`.
 - Parent access by phone only remains intentionally lightweight because OTP was removed by product decision.

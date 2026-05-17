@@ -22,9 +22,10 @@ def get_current_user(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token requerido.")
     try:
         payload = decode_access_token(credentials.credentials)
-        if payload.get("scope") == "parent":
+        if payload.get("typ") != "access" or payload.get("scope") == "parent":
             raise ValueError("Token inválido")
         user_id = UUID(str(payload["sub"]))
+        token_version = int(payload["token_version"])
     except (KeyError, ValueError):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token inválido.")
 
@@ -35,6 +36,8 @@ def get_current_user(
     )
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuario no encontrado.")
+    if user.token_version != token_version:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token revocado.")
     if sync_expired_organization(db, user.organization):
         db.commit()
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Tu cuenta expiro. Contacta al administrador.")

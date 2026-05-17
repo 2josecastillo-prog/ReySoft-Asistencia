@@ -20,7 +20,7 @@ def get_current_parent_guardian(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token requerido.")
     try:
         payload = decode_access_token(credentials.credentials)
-        if payload.get("scope") != "parent":
+        if payload.get("typ") != "access" or payload.get("scope") != "parent":
             raise ValueError("Token inválido")
         guardian_id = UUID(str(payload["sub"]))
     except (KeyError, ValueError):

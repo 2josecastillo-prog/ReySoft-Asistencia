@@ -28,7 +28,10 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
         db.commit()
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Tu cuenta expiro. Contacta al administrador.")
     ensure_active_organization(user)
-    access_token = create_access_token(subject=str(user.id), extra_claims={"role": user.role.value})
+    access_token = create_access_token(
+        subject=str(user.id),
+        extra_claims={"role": user.role.value, "token_version": user.token_version},
+    )
     return {"access_token": access_token, "token_type": "bearer", "user": user}
 
 

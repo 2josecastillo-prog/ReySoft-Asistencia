@@ -1,6 +1,7 @@
 import uuid
+from datetime import datetime
 
-from sqlalchemy import Boolean, CheckConstraint, Enum, ForeignKey, Index, String, Text, UniqueConstraint, Uuid
+from sqlalchemy import Boolean, CheckConstraint, DateTime, Enum, ForeignKey, Index, Integer, String, Text, UniqueConstraint, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
@@ -32,6 +33,8 @@ class User(TimestampMixin, Base):
         Enum(UserRole, name="user_role"), nullable=False
     )
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    token_version: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+    password_changed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=False), nullable=True)
 
     organization = relationship("Organization", back_populates="users")
     attendance_records = relationship("AttendanceRecord", back_populates="recorded_by")
