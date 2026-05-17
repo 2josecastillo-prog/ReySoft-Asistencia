@@ -60,7 +60,11 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
                 "max-age=63072000; includeSubDomains; preload",
             )
 
-        if request.url.path.startswith(SENSITIVE_PATH_PREFIXES):
+        request_path = request.url.path
+        normalized_path = request_path[4:] if request_path.startswith("/api/") else request_path
+        if request_path.startswith(SENSITIVE_PATH_PREFIXES) or normalized_path.startswith(
+            SENSITIVE_PATH_PREFIXES
+        ):
             response.headers["Cache-Control"] = "no-store"
             response.headers["Pragma"] = "no-cache"
             response.headers["Expires"] = "0"

@@ -29,6 +29,9 @@ def test_api_security_headers_and_sensitive_cache_policy(client: TestClient):
     assert response.headers["cache-control"] == "no-store"
     assert response.headers["pragma"] == "no-cache"
 
+    mounted_response = client.get("/api/auth/me")
+    assert mounted_response.headers["cache-control"] == "no-store"
+
 
 def test_vercel_frontend_security_headers_are_configured():
     config_path = Path(__file__).resolve().parents[2] / "vercel.json"
