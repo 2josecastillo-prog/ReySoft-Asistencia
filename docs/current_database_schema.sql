@@ -28,8 +28,7 @@ CREATE TYPE attendance_status AS ENUM (
 CREATE TYPE subscription_status AS ENUM (
     'active',
     'expired',
-    'cancelled',
-    'manual'
+    'cancelled'
 );
 
 CREATE TYPE notification_type AS ENUM (
@@ -217,7 +216,7 @@ CREATE TABLE alembic_version (
 );
 
 INSERT INTO alembic_version (version_num)
-VALUES ('20260517_0006');
+VALUES ('20260520_0007');
 
 CREATE INDEX idx_organizations_status
 ON organizations(status);

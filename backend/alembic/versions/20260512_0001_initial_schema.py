@@ -43,8 +43,7 @@ CREATE TYPE attendance_status AS ENUM (
 CREATE TYPE subscription_status AS ENUM (
     'active',
     'expired',
-    'cancelled',
-    'manual'
+    'cancelled'
 );
 
 CREATE TYPE notification_type AS ENUM (

@@ -641,7 +641,24 @@ def remove_student_guardian(
     )
     if not relation:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Relación estudiante-tutor no encontrada.")
+    remaining_relations = db.scalars(
+        select(StudentGuardian)
+        .where(
+            StudentGuardian.student_id == student.id,
+            StudentGuardian.guardian_id != guardian_id,
+        )
+        .order_by(StudentGuardian.created_at)
+    ).all()
+    if not remaining_relations:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El estudiante debe conservar al menos un tutor asignado.",
+        )
+    removed_primary = relation.is_primary
     db.delete(relation)
+    if removed_primary:
+        db.flush()
+        remaining_relations[0].is_primary = True
     db.commit()
 
 

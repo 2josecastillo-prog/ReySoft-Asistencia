@@ -277,8 +277,26 @@ def test_courses_guardians_students_and_guardian_assignment(client: TestClient):
     )
     assert assignment.status_code == 201, assignment.text
     relations = client.get(f"/students/{student['id']}/guardians", headers=headers).json()
+    assert len(relations) == 2
     assert len([relation for relation in relations if relation["is_primary"]]) == 1
     assert [relation for relation in relations if relation["is_primary"]][0]["guardian_id"] == second_guardian["id"]
+
+    removed_primary_relation = client.delete(
+        f"/students/{student['id']}/guardians/{second_guardian['id']}",
+        headers=headers,
+    )
+    assert removed_primary_relation.status_code == 204, removed_primary_relation.text
+    relations_after_removal = client.get(f"/students/{student['id']}/guardians", headers=headers).json()
+    assert len(relations_after_removal) == 1
+    assert relations_after_removal[0]["guardian_id"] == guardian["id"]
+    assert relations_after_removal[0]["is_primary"] is True
+
+    last_relation_removal = client.delete(
+        f"/students/{student['id']}/guardians/{guardian['id']}",
+        headers=headers,
+    )
+    assert last_relation_removal.status_code == 400
+    assert "al menos un tutor" in last_relation_removal.json()["detail"]
 
     deleted_student = client.delete(f"/students/{student['id']}", headers=headers)
     assert deleted_student.status_code == 200, deleted_student.text

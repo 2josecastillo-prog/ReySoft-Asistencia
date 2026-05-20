@@ -2,13 +2,14 @@
 
 Proyecto: `ReySoft-Asistencia`
 
-Fecha de actualizacion: 2026-05-19
+Fecha de actualizacion: 2026-05-20
 
 Fuente tecnica usada para este documento:
 
 - Modelos SQLAlchemy en `backend/app/models/`
-- Migraciones Alembic hasta `20260517_0006_split_person_full_names.py`
+- Migraciones Alembic hasta `20260520_0007_remove_manual_subscription_status.py`
 - Esquema consolidado en `docs/current_database_schema.sql`
+- Reglas vigentes de backend y frontend para tutores multiples por estudiante
 
 Este documento describe la base de datos vigente del proyecto. Los diagramas estan escritos en Mermaid para poder renderizarlos en GitHub, editores Markdown compatibles o herramientas de documentacion.
 
@@ -29,6 +30,8 @@ Cada centro educativo es una organizacion. Los datos escolares operativos se sep
 - `audit_logs`
 
 Los padres o tutores no tienen una tabla separada de autenticacion. El acceso para padres se resuelve usando registros de `guardians` y su `phone`.
+
+La base de datos ya modela la relacion estudiante-tutor como muchos a muchos. Por tanto, un estudiante puede tener varios tutores asociados y uno solo marcado como tutor principal.
 
 ## 2. Diagrama logico
 
@@ -255,7 +258,6 @@ erDiagram
 - `active`
 - `expired`
 - `cancelled`
-- `manual`
 
 ### `notification_type`
 
@@ -361,6 +363,14 @@ Restricciones:
 
 Tabla intermedia muchos a muchos entre estudiantes y tutores.
 
+Uso de negocio:
+
+- Un estudiante puede tener varios tutores.
+- Un tutor puede estar asociado a varios estudiantes.
+- Solo una relacion por estudiante puede tener `is_primary = TRUE`.
+- El tutor principal se usa como contacto por defecto para WhatsApp.
+- El portal de padres muestra los estudiantes asociados al tutor autenticado por telefono.
+
 Restricciones:
 
 - `UNIQUE (student_id, guardian_id)` evita asignaciones duplicadas.
@@ -417,7 +427,7 @@ Uso principal:
 
 ### `subscription_activations`
 
-Historial de activaciones manuales.
+Historial de activaciones realizadas por el `super_admin`.
 
 Campos relevantes:
 
@@ -523,10 +533,14 @@ Reglas principales:
 
 - Un `course_id` usado por un estudiante debe pertenecer a la misma `organization_id` del usuario.
 - Un estudiante y un tutor asignados en `student_guardians` deben pertenecer a la misma organizacion.
+- Al crear un estudiante, la interfaz permite seleccionar uno o varios tutores.
+- Al crear un estudiante, debe existir al menos un tutor asociado.
 - Una asistencia debe registrarse para un estudiante de la misma organizacion del usuario.
 - `recorded_by_user_id` debe pertenecer a la misma organizacion del estudiante, salvo casos administrativos controlados.
 - Un usuario escolar no puede consultar datos de otra organizacion.
 - Un tutor principal anterior se desmarca cuando se marca otro como principal.
+- Al quitar una relacion estudiante-tutor, el estudiante debe conservar al menos un tutor.
+- Si se quita el tutor principal y quedan otros tutores asociados, el backend promueve otro tutor como principal.
 - El login escolar y el portal de padres bloquean organizaciones no activas.
 - La expiracion de la activacion puede suspender automaticamente el centro.
 - Las plantillas por defecto se crean al crear un centro.
@@ -559,9 +573,12 @@ Este documento ya contempla los cambios recientes del proyecto:
 - Estado de asistencia `excused`.
 - Segundo registro diario permitido solo para `early_pickup`.
 - Acceso de padres por telefono del tutor, sin OTP.
+- Gestion visual de varios tutores por estudiante desde la pantalla de estudiantes.
+- Proteccion para que un estudiante no quede sin tutor al quitar relaciones.
 - Reportes de asistencia por estudiante y por curso.
 - Exportacion de reportes en Excel y PDF.
 - Importacion/exportacion de estudiantes por Excel y CSV.
+- Estado `manual` eliminado de `subscription_status`; los estados vigentes son `active`, `expired` y `cancelled`.
 
 ## 11. Observaciones tecnicas
 

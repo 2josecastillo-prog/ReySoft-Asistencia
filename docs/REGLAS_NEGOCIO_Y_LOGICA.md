@@ -82,7 +82,11 @@ RN-22. La activacion puede tener `expiration_date` opcional.
 
 RN-23. La activacion registra usuario activador, notas y fecha.
 
-RN-24. Activar, suspender, cancelar, crear y editar centros genera auditoria.
+RN-24. Los estados permitidos para `subscription_activations.status` son `active`, `expired` y `cancelled`.
+
+RN-24.1. El estado `manual` fue eliminado; cualquier registro existente con ese valor debe migrarse a `active` antes de recrear el enum PostgreSQL.
+
+RN-24.2. Activar, suspender, cancelar, crear y editar centros genera auditoria.
 
 ## 4. Roles y permisos
 
@@ -226,7 +230,7 @@ RN-61. El curso asignado al estudiante debe pertenecer a la misma organizacion.
 
 RN-62. El codigo de estudiante, si se usa, debe ser unico dentro de la organizacion.
 
-RN-63. Un estudiante debe tener al menos un tutor al crearse desde el formulario principal.
+RN-63. Un estudiante debe tener al menos un tutor al crearse desde el formulario principal, y el formulario permite seleccionar uno o varios tutores.
 
 RN-64. Los tutores asignados al estudiante deben pertenecer a la misma organizacion.
 
@@ -239,6 +243,10 @@ RN-67. Un tutor puede tener varios estudiantes.
 RN-68. Cada estudiante puede tener un solo tutor principal.
 
 RN-69. Si se asigna un nuevo tutor principal, el sistema desmarca automaticamente el tutor principal anterior.
+
+RN-69.1. Al quitar una relacion estudiante-tutor, el estudiante debe conservar al menos un tutor asignado.
+
+RN-69.2. Si se quita el tutor principal y quedan otros tutores asociados, el sistema promueve otro tutor como principal.
 
 RN-70. Eliminar un estudiante desde la aplicacion no borra la fila; marca `is_active=false`.
 

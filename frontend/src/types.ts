@@ -59,6 +59,14 @@ export interface Student extends NameParts {
   is_active: boolean;
 }
 
+export interface StudentGuardianRelation {
+  id: string;
+  student_id: string;
+  guardian_id: string;
+  is_primary: boolean;
+  created_at: string;
+}
+
 export interface AttendanceRecord {
   id: string;
   organization_id: string;

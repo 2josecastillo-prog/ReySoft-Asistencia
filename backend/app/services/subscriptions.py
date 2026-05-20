@@ -19,7 +19,7 @@ def _latest_activation(db: Session, organization_id) -> SubscriptionActivation |
         select(SubscriptionActivation)
         .where(
             SubscriptionActivation.organization_id == organization_id,
-            SubscriptionActivation.status.in_([SubscriptionStatus.active, SubscriptionStatus.manual]),
+            SubscriptionActivation.status == SubscriptionStatus.active,
         )
         .order_by(SubscriptionActivation.activation_date.desc(), SubscriptionActivation.created_at.desc())
         .limit(1)

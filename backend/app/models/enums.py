@@ -26,7 +26,6 @@ class SubscriptionStatus(str, Enum):
     active = "active"
     expired = "expired"
     cancelled = "cancelled"
-    manual = "manual"
 
 
 class NotificationType(str, Enum):
