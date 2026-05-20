@@ -13,6 +13,12 @@ Set the backend URL with:
 $env:VITE_API_URL="http://localhost:8000"
 ```
 
+Optional inactivity timeout:
+
+```powershell
+$env:VITE_INACTIVITY_TIMEOUT_MINUTES="15"
+```
+
 ## Routes
 
 - `/`

@@ -2,6 +2,14 @@
 
 Documento consolidado de reglas funcionales y logica operativa de `ReySoft-Asistencia`, alineado con el backend actual y el esquema PostgreSQL vigente.
 
+Ultima actualizacion: 2026-05-19.
+
+Documentos relacionados:
+
+- `docs/current_database_schema.sql`: esquema PostgreSQL consolidado vigente.
+- `docs/diagramas_logico_fisico_base_datos.md`: diagramas logico y fisico actualizados.
+- `docs/SECURITY_REVIEW.md`: revision de seguridad del proyecto.
+
 ## 1. Modelo SaaS multiempresa
 
 RN-01. Cada centro educativo se representa como una `organization`.
@@ -557,18 +565,44 @@ RN-149. `SUPABASE_SERVICE_ROLE_KEY` solo debe existir como variable secreta del 
 
 RN-150. `CORS_ORIGINS` debe limitarse al dominio real de produccion.
 
-## 20. Principios de integridad
+## 20. Seguridad web de produccion
 
-RN-151. Los endpoints no deben confiar en IDs enviados por el cliente sin validar pertenencia a la organizacion.
+RN-151. El frontend servido en Vercel debe enviar cabeceras HTTP de seguridad para reducir riesgos de clickjacking, sniffing de contenido, fuga de referrers y abuso de APIs del navegador.
 
-RN-152. Los borrados operativos de cursos, tutores, estudiantes y staff son desactivaciones logicas.
+RN-152. La API FastAPI debe aplicar las mismas cabeceras de seguridad en sus respuestas mediante middleware propio, incluyendo respuestas de error.
 
-RN-153. Las claves foraneas mantienen integridad referencial.
+RN-153. La politica `Content-Security-Policy` debe restringir por defecto los recursos a origen propio, impedir `frame-ancestors`, bloquear `object-src` y limitar scripts a `self`.
 
-RN-154. Los datos normalizados se guardan por relacion, no como texto duplicado:
+RN-154. La aplicacion debe enviar `X-Frame-Options: DENY` para impedir que el panel sea embebido en iframes por terceros.
+
+RN-155. La aplicacion debe enviar `X-Content-Type-Options: nosniff` para evitar interpretaciones peligrosas de tipos MIME.
+
+RN-156. La aplicacion debe enviar `Referrer-Policy: strict-origin-when-cross-origin`.
+
+RN-157. La aplicacion debe enviar `Permissions-Policy` deshabilitando capacidades no usadas como camara, microfono, geolocalizacion, pagos y USB.
+
+RN-158. En produccion se debe enviar `Strict-Transport-Security` con `max-age`, `includeSubDomains` y `preload`.
+
+RN-159. Las rutas sensibles de API deben responder con `Cache-Control: no-store`, `Pragma: no-cache` y `Expires: 0`.
+
+RN-160. La politica de cache sin almacenamiento debe aplicarse tanto a rutas montadas directamente como a rutas servidas por Vercel bajo prefijo `/api`.
+
+RN-161. CORS no debe usar comodines para metodos ni cabeceras; debe limitarse a metodos HTTP y cabeceras conocidas por la aplicacion.
+
+RN-162. Las cabeceras de seguridad del frontend se configuran en `vercel.json`; las cabeceras de API se refuerzan en FastAPI mediante `SecurityHeadersMiddleware`.
+
+## 21. Principios de integridad
+
+RN-163. Los endpoints no deben confiar en IDs enviados por el cliente sin validar pertenencia a la organizacion.
+
+RN-164. Los borrados operativos de cursos, tutores, estudiantes y staff son desactivaciones logicas.
+
+RN-165. Las claves foraneas mantienen integridad referencial.
+
+RN-166. Los datos normalizados se guardan por relacion, no como texto duplicado:
 
 - estudiante usa `course_id`
 - tutores se relacionan mediante `student_guardians`
 - asistencia usa `student_id`
 
-RN-155. La base de datos y la aplicacion trabajan juntas: la app valida reglas con mensajes claros y PostgreSQL refuerza reglas criticas con constraints e indices.
+RN-167. La base de datos y la aplicacion trabajan juntas: la app valida reglas con mensajes claros y PostgreSQL refuerza reglas criticas con constraints e indices.
