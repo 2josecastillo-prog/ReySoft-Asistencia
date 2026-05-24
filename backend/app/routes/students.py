@@ -582,6 +582,34 @@ def delete_student(
     return student
 
 
+@router.post("/{student_id}/reactivate", response_model=StudentResponse)
+def reactivate_student(
+    student_id: UUID,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    ensure_school_admin(current_user)
+    student = _get_student_or_404(db, student_id, current_user.organization_id)
+    if student.is_active:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="El estudiante ya está activo.")
+    student.is_active = True
+    create_audit_log(
+        db,
+        action="reactivate_student",
+        user=current_user,
+        organization_id=current_user.organization_id,
+        entity_name="students",
+        entity_id=student.id,
+        old_data={"is_active": False},
+        new_data={"is_active": True},
+        request=request,
+    )
+    db.commit()
+    db.refresh(student)
+    return student
+
+
 @router.post("/{student_id}/guardians", response_model=StudentGuardianResponse, status_code=status.HTTP_201_CREATED)
 def assign_guardian(
     student_id: UUID,

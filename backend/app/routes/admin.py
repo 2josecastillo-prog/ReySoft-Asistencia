@@ -2,7 +2,7 @@ from datetime import datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, UploadFile, status
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from app.core.permissions import ensure_super_admin
@@ -10,6 +10,7 @@ from app.core.security import hash_password, mark_password_changed
 from app.database.session import get_db
 from app.dependencies.auth import get_current_user
 from app.models import (
+    AuditLog,
     Notification,
     NotificationType,
     Organization,
@@ -20,12 +21,14 @@ from app.models import (
     UserRole,
 )
 from app.schemas.admin import (
+    AdminAuditLogResponse,
     AdminCreateOrganizationRequest,
     AdminCreateOrganizationResponse,
     AdminResetSchoolAdminPasswordRequest,
     AdminResetSchoolAdminPasswordResponse,
     AdminUpdateOrganizationRequest,
     ActivationRequest,
+    NotificationsReadAllResponse,
     NotificationResponse,
     SubscriptionActivationResponse,
     SuperAdminDashboardResponse,
@@ -394,6 +397,71 @@ def cancel_organization(
     )
 
 
+@router.get("/audit-logs", response_model=list[AdminAuditLogResponse])
+def list_audit_logs(
+    organization_id: UUID | None = None,
+    action: str | None = Query(default=None, min_length=1, max_length=100),
+    created_from: datetime | None = None,
+    created_to: datetime | None = None,
+    limit: int = Query(default=100, ge=1, le=500),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    ensure_super_admin(current_user)
+    query = (
+        select(
+            AuditLog,
+            Organization.name.label("organization_name"),
+            User.email.label("user_email"),
+            User.first_name.label("user_first_name"),
+            User.middle_name.label("user_middle_name"),
+            User.last_name.label("user_last_name"),
+            User.second_surname.label("user_second_surname"),
+        )
+        .outerjoin(Organization, AuditLog.organization_id == Organization.id)
+        .outerjoin(User, AuditLog.user_id == User.id)
+        .order_by(AuditLog.created_at.desc())
+        .limit(limit)
+    )
+    if organization_id:
+        query = query.where(AuditLog.organization_id == organization_id)
+    if action:
+        query = query.where(AuditLog.action == action)
+    if created_from:
+        query = query.where(AuditLog.created_at >= created_from)
+    if created_to:
+        query = query.where(AuditLog.created_at <= created_to)
+
+    response = []
+    for row in db.execute(query):
+        audit_log = row.AuditLog
+        name_parts = [
+            row.user_first_name,
+            row.user_middle_name,
+            row.user_last_name,
+            row.user_second_surname,
+        ]
+        response.append(
+            {
+                "id": audit_log.id,
+                "organization_id": audit_log.organization_id,
+                "organization_name": row.organization_name,
+                "user_id": audit_log.user_id,
+                "user_email": row.user_email,
+                "user_full_name": " ".join(part for part in name_parts if part) or None,
+                "action": audit_log.action,
+                "entity_name": audit_log.entity_name,
+                "entity_id": audit_log.entity_id,
+                "old_data": audit_log.old_data,
+                "new_data": audit_log.new_data,
+                "ip_address": audit_log.ip_address,
+                "user_agent": audit_log.user_agent,
+                "created_at": audit_log.created_at,
+            }
+        )
+    return response
+
+
 @router.get("/notifications", response_model=list[NotificationResponse])
 def list_notifications(
     unread_only: bool = False,
@@ -405,6 +473,17 @@ def list_notifications(
     if unread_only:
         query = query.where(Notification.is_read.is_(False))
     return db.scalars(query).all()
+
+
+@router.put("/notifications/read-all", response_model=NotificationsReadAllResponse)
+def mark_all_notifications_read(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    ensure_super_admin(current_user)
+    result = db.execute(update(Notification).where(Notification.is_read.is_(False)).values(is_read=True))
+    db.commit()
+    return {"updated_count": result.rowcount or 0}
 
 
 @router.put("/notifications/{notification_id}/read", response_model=NotificationResponse)

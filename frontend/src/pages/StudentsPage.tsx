@@ -1,5 +1,5 @@
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
-import { Download, Plus, Star, Trash2, Upload, UserPlus, UsersRound, X } from 'lucide-react';
+import { Download, Plus, RotateCcw, Star, Trash2, Upload, UserPlus, UsersRound, X } from 'lucide-react';
 import { api, extractError } from '../api/client';
 import { EmptyState } from '../components/EmptyState';
 import { Course, Guardian, Student, StudentGuardianRelation } from '../types';
@@ -197,6 +197,22 @@ export function StudentsPage() {
     await loadData();
   }
 
+  async function reactivateStudent(student: Student) {
+    if (!confirm('¿Reactivar este estudiante?')) return;
+    setError('');
+    setMessage('');
+    try {
+      const response = await api.post<Student>(`/students/${student.id}/reactivate`);
+      if (selectedStudent?.id === student.id) {
+        setSelectedStudent(response.data);
+      }
+      await loadData();
+      setMessage('Estudiante reactivado.');
+    } catch (err) {
+      setError(extractError(err));
+    }
+  }
+
   async function exportStudents(fileFormat: 'xlsx' | 'csv') {
     setError('');
     try {
@@ -377,7 +393,19 @@ export function StudentsPage() {
                           <UsersRound size={16} />
                           Tutores
                         </button>
-                        {canEdit && <button className="btn-danger" onClick={() => removeStudent(student.id)} type="button"><Trash2 size={16} /></button>}
+                        {canEdit && (
+                          student.is_active ? (
+                            <button className="btn-danger" onClick={() => removeStudent(student.id)} type="button">
+                              <Trash2 size={16} />
+                              Desactivar
+                            </button>
+                          ) : (
+                            <button className="btn-secondary" onClick={() => reactivateStudent(student)} type="button">
+                              <RotateCcw size={16} />
+                              Reactivar
+                            </button>
+                          )
+                        )}
                       </div>
                     </td>
                   </tr>

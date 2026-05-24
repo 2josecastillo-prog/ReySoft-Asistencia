@@ -231,6 +231,77 @@ def test_expired_activation_auto_suspends_school_and_blocks_school_login(client:
     assert organization_detail.json()["status"] == "suspended"
 
 
+def test_super_admin_marks_all_notifications_as_read(client: TestClient):
+    super_admin_headers = auth_headers(client, "superadmin@example.com", "SuperAdmin123!")
+    first_organization = create_school_by_super_admin(client, "notify-one", status="pending")
+    second_organization = create_school_by_super_admin(client, "notify-two", status="pending")
+
+    for organization in [first_organization, second_organization]:
+        response = client.post(
+            f"/admin/organizations/{organization['id']}/activate",
+            json={"notes": "Pago externo confirmado"},
+            headers=super_admin_headers,
+        )
+        assert response.status_code == 200, response.text
+
+    unread_notifications = client.get(
+        "/admin/notifications",
+        params={"unread_only": True},
+        headers=super_admin_headers,
+    )
+    assert unread_notifications.status_code == 200, unread_notifications.text
+    assert len(unread_notifications.json()) == 2
+
+    mark_all = client.put("/admin/notifications/read-all", headers=super_admin_headers)
+    assert mark_all.status_code == 200, mark_all.text
+    assert mark_all.json() == {"updated_count": 2}
+
+    remaining_unread = client.get(
+        "/admin/notifications",
+        params={"unread_only": True},
+        headers=super_admin_headers,
+    )
+    assert remaining_unread.status_code == 200, remaining_unread.text
+    assert remaining_unread.json() == []
+
+
+def test_super_admin_lists_audit_logs_by_organization(client: TestClient):
+    super_admin_headers = auth_headers(client, "superadmin@example.com", "SuperAdmin123!")
+    first_organization = create_school_by_super_admin(client, "audit-one", status="pending")
+    second_organization = create_school_by_super_admin(client, "audit-two", status="pending")
+
+    for organization in [first_organization, second_organization]:
+        response = client.post(
+            f"/admin/organizations/{organization['id']}/activate",
+            json={"notes": "Pago externo confirmado"},
+            headers=super_admin_headers,
+        )
+        assert response.status_code == 200, response.text
+
+    all_logs = client.get("/admin/audit-logs", headers=super_admin_headers)
+    assert all_logs.status_code == 200, all_logs.text
+    assert {item["organization_id"] for item in all_logs.json()} >= {
+        first_organization["id"],
+        second_organization["id"],
+    }
+    assert all_logs.json()[0]["organization_name"] is not None
+    assert all_logs.json()[0]["user_email"] == "superadmin@example.com"
+
+    first_logs = client.get(
+        "/admin/audit-logs",
+        params={"organization_id": first_organization["id"], "action": "activate_organization"},
+        headers=super_admin_headers,
+    )
+    assert first_logs.status_code == 200, first_logs.text
+    assert first_logs.json()
+    assert {item["organization_id"] for item in first_logs.json()} == {first_organization["id"]}
+    assert {item["action"] for item in first_logs.json()} == {"activate_organization"}
+
+    school_headers = auth_headers(client, "admin-audit-one@example.com", "SchoolAdmin123!")
+    forbidden = client.get("/admin/audit-logs", headers=school_headers)
+    assert forbidden.status_code == 403
+
+
 def test_courses_guardians_students_and_guardian_assignment(client: TestClient):
     organization = create_school_by_super_admin(client)
     activate_school(client, organization["id"])
@@ -301,6 +372,14 @@ def test_courses_guardians_students_and_guardian_assignment(client: TestClient):
     deleted_student = client.delete(f"/students/{student['id']}", headers=headers)
     assert deleted_student.status_code == 200, deleted_student.text
     assert deleted_student.json()["is_active"] is False
+
+    reactivated_student = client.post(f"/students/{student['id']}/reactivate", headers=headers)
+    assert reactivated_student.status_code == 200, reactivated_student.text
+    assert reactivated_student.json()["is_active"] is True
+
+    duplicate_reactivation = client.post(f"/students/{student['id']}/reactivate", headers=headers)
+    assert duplicate_reactivation.status_code == 409
+    assert "ya está activo" in duplicate_reactivation.json()["detail"]
 
     deleted_guardian = client.delete(f"/guardians/{second_guardian['id']}", headers=headers)
     assert deleted_guardian.status_code == 200, deleted_guardian.text

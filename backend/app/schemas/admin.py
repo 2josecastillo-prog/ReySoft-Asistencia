@@ -90,6 +90,27 @@ class NotificationResponse(BaseModel):
     created_at: datetime
 
 
+class NotificationsReadAllResponse(BaseModel):
+    updated_count: int
+
+
+class AdminAuditLogResponse(BaseModel):
+    id: UUID
+    organization_id: UUID | None
+    organization_name: str | None
+    user_id: UUID | None
+    user_email: EmailStr | None
+    user_full_name: str | None
+    action: str
+    entity_name: str | None
+    entity_id: UUID | None
+    old_data: dict[str, Any] | None
+    new_data: dict[str, Any] | None
+    ip_address: str | None
+    user_agent: str | None
+    created_at: datetime
+
+
 class SubscriptionActivationResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
