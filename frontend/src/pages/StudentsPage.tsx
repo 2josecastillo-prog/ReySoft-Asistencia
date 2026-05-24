@@ -1,5 +1,5 @@
 import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from 'react';
-import { Download, Plus, RotateCcw, Star, Trash2, Upload, UserPlus, UsersRound, X } from 'lucide-react';
+import { Download, Plus, RotateCcw, Search, Star, Trash2, Upload, UserPlus, UsersRound, X } from 'lucide-react';
 import { api, extractError } from '../api/client';
 import { EmptyState } from '../components/EmptyState';
 import { Course, Guardian, Student, StudentGuardianRelation } from '../types';
@@ -42,6 +42,8 @@ export function StudentsPage() {
   const [form, setForm] = useState<StudentFormState>(blankForm);
   const [courseFilter, setCourseFilter] = useState('');
   const [search, setSearch] = useState('');
+  const [guardianSearch, setGuardianSearch] = useState('');
+  const [guardianRelationshipFilter, setGuardianRelationshipFilter] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [importInputKey, setImportInputKey] = useState(0);
@@ -53,6 +55,29 @@ export function StudentsPage() {
   const [assignAsPrimary, setAssignAsPrimary] = useState(false);
 
   const selectedGuardianIds = useMemo(() => new Set(form.guardian_ids), [form.guardian_ids]);
+  const guardianRelationshipOptions = useMemo(
+    () => Array.from(new Set(guardians.flatMap((guardian) => (guardian.relationship ? [guardian.relationship] : [])))).sort(),
+    [guardians]
+  );
+  const visibleGuardiansForCreation = useMemo(() => {
+    const normalizedSearch = guardianSearch.trim().toLowerCase();
+    const normalizedPhoneSearch = normalizedSearch.replace(/\D/g, '');
+    return guardians.filter((guardian) => {
+      if (selectedGuardianIds.has(guardian.id)) return true;
+      const matchesRelationship = guardianRelationshipFilter
+        ? guardian.relationship === guardianRelationshipFilter
+        : true;
+      const matchesSearch = normalizedSearch
+        ? [
+          guardian.full_name,
+          guardian.phone,
+          guardian.relationship ?? ''
+        ].some((value) => value.toLowerCase().includes(normalizedSearch))
+          || (normalizedPhoneSearch ? guardian.phone.includes(normalizedPhoneSearch) : false)
+        : true;
+      return matchesRelationship && matchesSearch;
+    });
+  }, [guardianRelationshipFilter, guardianSearch, guardians, selectedGuardianIds]);
   const assignedGuardianIds = useMemo(
     () => new Set(studentGuardians.map((relation) => relation.guardian_id)),
     [studentGuardians]
@@ -326,11 +351,34 @@ export function StudentsPage() {
               </div>
               <span className="text-xs font-medium text-slate-500">{form.guardian_ids.length} seleccionado(s)</span>
             </div>
+            <div className="mt-3 grid gap-2 md:grid-cols-[minmax(0,1fr)_240px]">
+              <label className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                <input
+                  className="form-input pl-9"
+                  placeholder="Buscar tutor por nombre, teléfono o relación"
+                  value={guardianSearch}
+                  onChange={(event) => setGuardianSearch(event.target.value)}
+                />
+              </label>
+              <select
+                className="form-input"
+                value={guardianRelationshipFilter}
+                onChange={(event) => setGuardianRelationshipFilter(event.target.value)}
+              >
+                <option value="">Todas las relaciones</option>
+                {guardianRelationshipOptions.map((relationship) => (
+                  <option key={relationship} value={relationship}>{relationship}</option>
+                ))}
+              </select>
+            </div>
             {guardians.length === 0 ? (
               <p className="mt-3 text-sm text-slate-500">No hay tutores activos.</p>
+            ) : visibleGuardiansForCreation.length === 0 ? (
+              <p className="mt-3 text-sm text-slate-500">No hay tutores que coincidan con la búsqueda.</p>
             ) : (
               <div className="mt-3 grid max-h-64 gap-2 overflow-y-auto pr-1 md:grid-cols-2 xl:grid-cols-3">
-                {guardians.map((guardian) => {
+                {visibleGuardiansForCreation.map((guardian) => {
                   const selected = selectedGuardianIds.has(guardian.id);
                   return (
                     <label className="rounded-md border border-slate-200 p-3 text-sm" key={guardian.id}>
