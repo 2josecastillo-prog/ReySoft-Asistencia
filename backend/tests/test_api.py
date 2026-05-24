@@ -265,6 +265,78 @@ def test_super_admin_marks_all_notifications_as_read(client: TestClient):
     assert remaining_unread.json() == []
 
 
+def test_school_users_have_per_user_realtime_notifications(client: TestClient):
+    first_organization = create_school_by_super_admin(client, "notify-school", status="pending")
+    second_organization = create_school_by_super_admin(client, "notify-other", status="pending")
+    super_admin_headers = auth_headers(client, "superadmin@example.com", "SuperAdmin123!")
+
+    for organization in [first_organization, second_organization]:
+        response = client.post(
+            f"/admin/organizations/{organization['id']}/activate",
+            json={"notes": "Pago externo confirmado"},
+            headers=super_admin_headers,
+        )
+        assert response.status_code == 200, response.text
+
+    school_admin_headers = auth_headers(client, "admin-notify-school@example.com", "SchoolAdmin123!")
+    staff_response = client.post(
+        "/users",
+        json={
+            "first_name": "Personal",
+            "last_name": "Notificaciones",
+            "email": "staff-notify-school@example.com",
+            "password": "Staff12345!",
+        },
+        headers=school_admin_headers,
+    )
+    assert staff_response.status_code == 201, staff_response.text
+    staff_headers = auth_headers(client, "staff-notify-school@example.com", "Staff12345!")
+    other_school_headers = auth_headers(client, "admin-notify-other@example.com", "SchoolAdmin123!")
+
+    school_notifications = client.get("/notifications", headers=school_admin_headers)
+    assert school_notifications.status_code == 200, school_notifications.text
+    assert [item["organization_id"] for item in school_notifications.json()] == [first_organization["id"]]
+    assert school_notifications.json()[0]["is_read"] is False
+
+    staff_notifications = client.get("/notifications", headers=staff_headers)
+    assert staff_notifications.status_code == 200, staff_notifications.text
+    assert staff_notifications.json()[0]["id"] == school_notifications.json()[0]["id"]
+    assert staff_notifications.json()[0]["is_read"] is False
+
+    read_by_admin = client.put(
+        f"/notifications/{school_notifications.json()[0]['id']}/read",
+        headers=school_admin_headers,
+    )
+    assert read_by_admin.status_code == 200, read_by_admin.text
+    assert read_by_admin.json()["is_read"] is True
+
+    admin_unread = client.get("/notifications", params={"unread_only": True}, headers=school_admin_headers)
+    assert admin_unread.status_code == 200, admin_unread.text
+    assert admin_unread.json() == []
+
+    staff_unread = client.get("/notifications", params={"unread_only": True}, headers=staff_headers)
+    assert staff_unread.status_code == 200, staff_unread.text
+    assert [item["id"] for item in staff_unread.json()] == [school_notifications.json()[0]["id"]]
+
+    read_all_by_staff = client.put("/notifications/read-all", headers=staff_headers)
+    assert read_all_by_staff.status_code == 200, read_all_by_staff.text
+    assert read_all_by_staff.json() == {"updated_count": 1}
+
+    other_school_notifications = client.get("/notifications", headers=other_school_headers)
+    assert other_school_notifications.status_code == 200, other_school_notifications.text
+    assert [item["organization_id"] for item in other_school_notifications.json()] == [second_organization["id"]]
+
+
+def test_authenticated_user_can_open_notifications_websocket(client: TestClient):
+    organization = create_school_by_super_admin(client, "notify-ws", status="active")
+    activate_school(client, organization["id"])
+    login = client.post("/auth/login", json={"email": "admin-notify-ws@example.com", "password": "SchoolAdmin123!"})
+    assert login.status_code == 200, login.text
+
+    with client.websocket_connect(f"/notifications/ws?token={login.json()['access_token']}") as websocket:
+        websocket.send_text("ping")
+
+
 def test_super_admin_lists_audit_logs_by_organization(client: TestClient):
     super_admin_headers = auth_headers(client, "superadmin@example.com", "SuperAdmin123!")
     first_organization = create_school_by_super_admin(client, "audit-one", status="pending")

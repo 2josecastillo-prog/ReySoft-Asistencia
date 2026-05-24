@@ -34,6 +34,17 @@ export interface User extends NameParts {
   organization?: Organization | null;
 }
 
+export interface NotificationItem {
+  id: string;
+  user_id?: string | null;
+  organization_id?: string | null;
+  title: string;
+  message: string;
+  type: string;
+  is_read: boolean;
+  created_at: string;
+}
+
 export interface Course {
   id: string;
   organization_id: string;

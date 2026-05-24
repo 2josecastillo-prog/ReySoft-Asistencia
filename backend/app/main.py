@@ -6,7 +6,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.core.config import settings
 from app.core.security_headers import SecurityHeadersMiddleware
-from app.routes import admin, attendance, auth, courses, dashboard, guardians, organization, parents, reports, students, users, whatsapp
+from app.routes import admin, attendance, auth, courses, dashboard, guardians, notifications, organization, parents, reports, students, users, whatsapp
 
 
 def create_app() -> FastAPI:
@@ -29,6 +29,7 @@ def create_app() -> FastAPI:
     app.include_router(guardians.router)
     app.include_router(students.router)
     app.include_router(users.router)
+    app.include_router(notifications.router)
     app.include_router(attendance.router)
     app.include_router(whatsapp.router)
     app.include_router(organization.router)

@@ -1,7 +1,8 @@
-import { BarChart3, Bell, BookOpen, CalendarCheck, GraduationCap, Home, LogOut, MessageCircle, Settings, UserCog, Users } from 'lucide-react';
+import { BarChart3, BookOpen, CalendarCheck, GraduationCap, Home, LogOut, MessageCircle, Settings, UserCog, Users } from 'lucide-react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { mediaUrl } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
+import { NotificationCenter } from '../components/NotificationCenter';
 import { ProjectLogo } from '../components/ProjectLogo';
 import { UserRole } from '../types';
 import { labelFor } from '../utils/labels';
@@ -66,7 +67,7 @@ export function DashboardLayout() {
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{labelFor(organization?.status)}</p>
             <h1 className="text-xl font-semibold text-slate-950">{organization?.name}</h1>
           </div>
-          <Bell className="text-accent" size={22} />
+          <NotificationCenter />
         </header>
         <div className="flex-1 p-4 md:p-6">
           <Outlet />

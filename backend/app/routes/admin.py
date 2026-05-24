@@ -2,7 +2,7 @@ from datetime import datetime
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, UploadFile, status
-from sqlalchemy import func, select, update
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.permissions import ensure_super_admin
@@ -28,14 +28,19 @@ from app.schemas.admin import (
     AdminResetSchoolAdminPasswordResponse,
     AdminUpdateOrganizationRequest,
     ActivationRequest,
-    NotificationsReadAllResponse,
-    NotificationResponse,
     SubscriptionActivationResponse,
     SuperAdminDashboardResponse,
 )
+from app.schemas.notification import NotificationResponse, NotificationsReadAllResponse
 from app.schemas.organization import OrganizationResponse
 from app.services.audit import create_audit_log
 from app.services.logo_uploads import save_logo_upload
+from app.services.notification_center import (
+    list_notifications_for_user,
+    mark_all_notifications_read as mark_visible_notifications_read,
+    mark_notification_read as mark_visible_notification_read,
+)
+from app.services.notification_realtime import broadcast_notification
 from app.services.subscriptions import sync_expired_organization, sync_expired_organizations
 from app.services.templates import create_default_whatsapp_templates
 from app.utils.phone import clean_phone_number
@@ -318,15 +323,14 @@ def activate_organization(
         created_at=datetime.now(),
     )
     db.add(activation)
-    db.add(
-        Notification(
-            user_id=None,
-            organization_id=organization.id,
-            title="Centro activado",
-            message=f"{organization.name} fue activado manualmente.",
-            type=NotificationType.activation,
-        )
+    notification = Notification(
+        user_id=None,
+        organization_id=organization.id,
+        title="Centro activado",
+        message=f"{organization.name} fue activado manualmente.",
+        type=NotificationType.activation,
     )
+    db.add(notification)
     create_audit_log(
         db,
         action="activate_organization",
@@ -340,6 +344,8 @@ def activate_organization(
     )
     db.commit()
     db.refresh(organization)
+    db.refresh(notification)
+    broadcast_notification(notification)
     return organization
 
 
@@ -357,6 +363,15 @@ def _change_organization_status(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Centro educativo no encontrado.")
     old_status = organization.status.value
     organization.status = next_status
+    notification_title = "Centro suspendido" if next_status == OrganizationStatus.suspended else "Centro cancelado"
+    notification = Notification(
+        user_id=None,
+        organization_id=organization.id,
+        title=notification_title,
+        message=f"{organization.name} cambió a estado {next_status.value}.",
+        type=NotificationType.warning,
+    )
+    db.add(notification)
     create_audit_log(
         db,
         action=action,
@@ -370,6 +385,8 @@ def _change_organization_status(
     )
     db.commit()
     db.refresh(organization)
+    db.refresh(notification)
+    broadcast_notification(notification)
     return organization
 
 
@@ -465,14 +482,12 @@ def list_audit_logs(
 @router.get("/notifications", response_model=list[NotificationResponse])
 def list_notifications(
     unread_only: bool = False,
+    limit: int = Query(default=100, ge=1, le=200),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
     ensure_super_admin(current_user)
-    query = select(Notification).order_by(Notification.created_at.desc())
-    if unread_only:
-        query = query.where(Notification.is_read.is_(False))
-    return db.scalars(query).all()
+    return list_notifications_for_user(db, current_user, unread_only=unread_only, limit=limit)
 
 
 @router.put("/notifications/read-all", response_model=NotificationsReadAllResponse)
@@ -481,9 +496,9 @@ def mark_all_notifications_read(
     current_user: User = Depends(get_current_user),
 ):
     ensure_super_admin(current_user)
-    result = db.execute(update(Notification).where(Notification.is_read.is_(False)).values(is_read=True))
+    updated_count = mark_visible_notifications_read(db, current_user)
     db.commit()
-    return {"updated_count": result.rowcount or 0}
+    return {"updated_count": updated_count}
 
 
 @router.put("/notifications/{notification_id}/read", response_model=NotificationResponse)
@@ -493,12 +508,8 @@ def mark_notification_read(
     current_user: User = Depends(get_current_user),
 ):
     ensure_super_admin(current_user)
-    notification = db.get(Notification, notification_id)
-    if not notification:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Notificación no encontrada.")
-    notification.is_read = True
+    notification = mark_visible_notification_read(db, current_user, notification_id)
     db.commit()
-    db.refresh(notification)
     return notification
 
 

@@ -1,5 +1,5 @@
 -- ReySoft-Asistencia current PostgreSQL schema
--- Consolidated from Alembic revisions through 20260517_0006.
+-- Consolidated from Alembic revisions through 20260524_0008.
 -- This file is a reference/export of the current schema, not a replacement for Alembic.
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
@@ -185,6 +185,16 @@ CREATE TABLE notifications (
     created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
+CREATE TABLE notification_reads (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    notification_id UUID NOT NULL REFERENCES notifications(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    read_at TIMESTAMP NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT uq_notification_read_per_user
+    UNIQUE (notification_id, user_id)
+);
+
 CREATE TABLE subscription_activations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
@@ -216,7 +226,7 @@ CREATE TABLE alembic_version (
 );
 
 INSERT INTO alembic_version (version_num)
-VALUES ('20260520_0007');
+VALUES ('20260524_0008');
 
 CREATE INDEX idx_organizations_status
 ON organizations(status);
@@ -277,6 +287,12 @@ ON notifications(user_id);
 
 CREATE INDEX idx_notifications_is_read
 ON notifications(is_read);
+
+CREATE INDEX idx_notification_reads_notification_id
+ON notification_reads(notification_id);
+
+CREATE INDEX idx_notification_reads_user_id
+ON notification_reads(user_id);
 
 CREATE INDEX idx_subscription_organization_id
 ON subscription_activations(organization_id);

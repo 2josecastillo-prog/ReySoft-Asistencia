@@ -2,9 +2,10 @@ import { FormEvent, useEffect, useState } from 'react';
 import { Bell, Check, CheckCircle2, FileClock, KeyRound, MailOpen, PauseCircle, Pencil, Plus, RefreshCw, Save, X, XCircle } from 'lucide-react';
 import { api, extractError } from '../api/client';
 import { EmptyState } from '../components/EmptyState';
+import { NotificationCenter } from '../components/NotificationCenter';
 import { ProjectLogo } from '../components/ProjectLogo';
 import { StatusBadge } from '../components/StatusBadge';
-import { Organization, OrganizationStatus } from '../types';
+import { NotificationItem, Organization, OrganizationStatus } from '../types';
 import { useAuth } from '../auth/AuthContext';
 
 interface AdminStats {
@@ -13,15 +14,6 @@ interface AdminStats {
   pending_organizations: number;
   suspended_organizations: number;
   new_registration_requests: number;
-}
-
-interface NotificationItem {
-  id: string;
-  title: string;
-  message: string;
-  type: string;
-  is_read: boolean;
-  created_at: string;
 }
 
 type NotificationFilter = 'all' | 'unread' | 'read';
@@ -372,7 +364,10 @@ export function AdminDashboardPage() {
             <h1 className="text-2xl font-semibold">Panel global</h1>
           </div>
         </div>
-        <button className="btn-secondary" onClick={logout}>Salir</button>
+        <div className="flex items-center gap-2">
+          <NotificationCenter />
+          <button className="btn-secondary" onClick={logout}>Salir</button>
+        </div>
       </header>
       <div className="grid gap-6 p-5">
         {error && <div className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</div>}

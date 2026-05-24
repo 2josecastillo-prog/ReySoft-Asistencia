@@ -9,7 +9,7 @@ from app.models.enums import (
     UserRole,
 )
 from app.models.guardian import Guardian
-from app.models.notification import Notification
+from app.models.notification import Notification, NotificationRead
 from app.models.organization import Organization
 from app.models.student import Student, StudentGuardian
 from app.models.subscription import SubscriptionActivation
@@ -23,6 +23,7 @@ __all__ = [
     "Course",
     "Guardian",
     "Notification",
+    "NotificationRead",
     "NotificationType",
     "Organization",
     "OrganizationStatus",

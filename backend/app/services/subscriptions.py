@@ -12,6 +12,7 @@ from app.models import (
     SubscriptionStatus,
 )
 from app.services.audit import create_audit_log
+from app.services.notification_realtime import broadcast_notification
 
 
 def _latest_activation(db: Session, organization_id) -> SubscriptionActivation | None:
@@ -37,15 +38,14 @@ def sync_expired_organization(db: Session, organization: Organization | None) ->
     old_status = organization.status.value
     organization.status = OrganizationStatus.suspended
     activation.status = SubscriptionStatus.expired
-    db.add(
-        Notification(
-            user_id=None,
-            organization_id=organization.id,
-            title="Centro suspendido automaticamente",
-            message=f"{organization.name} fue suspendido porque su activacion expiro el {activation.expiration_date}.",
-            type=NotificationType.warning,
-        )
+    notification = Notification(
+        user_id=None,
+        organization_id=organization.id,
+        title="Centro suspendido automáticamente",
+        message=f"{organization.name} fue suspendido porque su activación expiró el {activation.expiration_date}.",
+        type=NotificationType.warning,
     )
+    db.add(notification)
     create_audit_log(
         db,
         action="auto_suspend_expired_organization",
@@ -61,6 +61,7 @@ def sync_expired_organization(db: Session, organization: Organization | None) ->
         },
     )
     db.flush()
+    broadcast_notification(notification)
     return True
 
 

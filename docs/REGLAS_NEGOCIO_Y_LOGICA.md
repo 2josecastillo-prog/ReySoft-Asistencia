@@ -516,9 +516,17 @@ RN-137. El `super_admin` puede consultar notificaciones.
 
 RN-138. Las notificaciones pueden estar leidas o no leidas.
 
-RN-139. El `super_admin` puede marcar notificaciones como leidas.
+RN-139. El `super_admin`, `school_admin` y `staff` pueden consultar sus notificaciones visibles.
 
-RN-140. Las activaciones y expiraciones generan notificaciones internas.
+RN-140. El estado de lectura de una notificacion compartida se registra por usuario para que un `school_admin` no marque como leida la notificacion de un `staff`, ni al contrario.
+
+RN-140.1. Las activaciones, suspensiones, cancelaciones y expiraciones generan notificaciones internas.
+
+RN-140.2. El frontend debe intentar recibir notificaciones por WebSocket cuando el entorno lo soporte.
+
+RN-140.3. El frontend debe usar polling automatico como respaldo para entornos serverless o conexiones WebSocket no disponibles.
+
+RN-140.4. El frontend debe mostrar un aviso visual tipo push cuando llegue una notificacion nueva mientras el usuario esta autenticado.
 
 ## 18. Auditoria
 

@@ -2,12 +2,12 @@
 
 Proyecto: `ReySoft-Asistencia`
 
-Fecha de actualizacion: 2026-05-20
+Fecha de actualizacion: 2026-05-24
 
 Fuente tecnica usada para este documento:
 
 - Modelos SQLAlchemy en `backend/app/models/`
-- Migraciones Alembic hasta `20260520_0007_remove_manual_subscription_status.py`
+- Migraciones Alembic hasta `20260524_0008_add_notification_reads.py`
 - Esquema consolidado en `docs/current_database_schema.sql`
 - Reglas vigentes de backend y frontend para tutores multiples por estudiante
 
@@ -28,6 +28,8 @@ Cada centro educativo es una organizacion. Los datos escolares operativos se sep
 - `notifications`
 - `subscription_activations`
 - `audit_logs`
+
+La lectura de notificaciones se registra por usuario en `notification_reads`, lo que permite que una misma notificacion de un centro sea visible para `school_admin` y `staff` sin compartir el estado de leida.
 
 Los padres o tutores no tienen una tabla separada de autenticacion. El acceso para padres se resuelve usando registros de `guardians` y su `phone`.
 
@@ -57,6 +59,8 @@ erDiagram
 
     USERS ||--o{ ATTENDANCE_RECORDS : "registra"
     USERS ||--o{ NOTIFICATIONS : "destinatario"
+    USERS ||--o{ NOTIFICATION_READS : "marca lectura"
+    NOTIFICATIONS ||--o{ NOTIFICATION_READS : "leida por"
     USERS ||--o{ SUBSCRIPTION_ACTIVATIONS : "activa"
     USERS ||--o{ AUDIT_LOGS : "ejecuta"
 ```
@@ -181,6 +185,13 @@ erDiagram
         timestamp created_at
     }
 
+    notification_reads {
+        uuid id PK
+        uuid notification_id FK
+        uuid user_id FK
+        timestamp read_at
+    }
+
     subscription_activations {
         uuid id PK
         uuid organization_id FK
@@ -226,6 +237,8 @@ erDiagram
     students ||--o{ attendance_records : "student_id"
     users ||--o{ attendance_records : "recorded_by_user_id"
     users ||--o{ notifications : "user_id"
+    users ||--o{ notification_reads : "user_id"
+    notifications ||--o{ notification_reads : "notification_id"
     users ||--o{ subscription_activations : "activated_by_user_id"
     users ||--o{ audit_logs : "user_id"
 ```
@@ -422,8 +435,23 @@ Notificaciones internas.
 
 Uso principal:
 
-- Notificaciones para superadmin o relacionadas con organizaciones.
-- Permite estado leido/no leido con `is_read`.
+- Notificaciones para superadmin, usuarios especificos o centros completos.
+- `organization_id` permite que la notificacion sea visible para usuarios activos del mismo centro.
+- `user_id` permite dirigir una notificacion a un usuario especifico.
+- `is_read` se conserva para compatibilidad, pero el estado individual de lectura se registra en `notification_reads`.
+
+### `notification_reads`
+
+Lecturas de notificaciones por usuario.
+
+Uso principal:
+
+- Permite que `school_admin` y `staff` vean la misma notificacion del centro con estados de lectura independientes.
+- Evita marcar como leida globalmente una notificacion compartida.
+
+Restriccion:
+
+- `UNIQUE (notification_id, user_id)` evita registrar dos lecturas iguales para el mismo usuario.
 
 ### `subscription_activations`
 
@@ -465,6 +493,7 @@ Campos relevantes:
 - `idx_attendance_date`
 - `idx_attendance_status`
 - `idx_notifications_is_read`
+- `idx_notification_reads_user_id`
 - `idx_audit_logs_action`
 
 ### Indices por multiempresa
@@ -485,6 +514,7 @@ Campos relevantes:
 - `idx_student_guardians_guardian_id`
 - `idx_attendance_student_id`
 - `idx_notifications_user_id`
+- `idx_notification_reads_notification_id`
 - `idx_audit_logs_user_id`
 
 ### Unicos de negocio
@@ -494,6 +524,7 @@ Campos relevantes:
 - `courses(organization_id, name, section, academic_year)`
 - `students(organization_id, student_code)`
 - `student_guardians(student_id, guardian_id)`
+- `notification_reads(notification_id, user_id)`
 - `whatsapp_message_templates(organization_id, status)`
 
 ### Unicos parciales
@@ -513,6 +544,7 @@ Si se elimina una organizacion en base de datos:
 - `attendance_records`: `ON DELETE CASCADE`
 - `whatsapp_message_templates`: `ON DELETE CASCADE`
 - `notifications`: `ON DELETE CASCADE`
+- `notification_reads`: se elimina por cascada si se elimina su notificacion o usuario relacionado.
 - `subscription_activations`: `ON DELETE CASCADE`
 - `audit_logs`: `ON DELETE SET NULL`
 

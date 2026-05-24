@@ -16,7 +16,7 @@ CONTENT_SECURITY_POLICY = "; ".join(
         "font-src 'self' data:",
         "style-src 'self' 'unsafe-inline'",
         "script-src 'self'",
-        "connect-src 'self' https:",
+        "connect-src 'self' https: wss: ws:",
         "upgrade-insecure-requests",
     )
 )
@@ -38,6 +38,7 @@ SENSITIVE_PATH_PREFIXES = (
     "/courses",
     "/dashboard",
     "/guardians",
+    "/notifications",
     "/organization",
     "/parents",
     "/reports",
