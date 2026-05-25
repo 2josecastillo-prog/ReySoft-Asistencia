@@ -30,6 +30,13 @@ class Settings(BaseSettings):
     supabase_storage_bucket: str = "school-logos"
     upload_dir: str = "uploads"
     max_logo_upload_bytes: int = 2 * 1024 * 1024
+    rate_limit_enabled: bool = True
+    rate_limit_default_requests_per_minute: int = 120
+    rate_limit_auth_requests_per_minute: int = 5
+    rate_limit_parent_auth_requests_per_minute: int = 8
+    rate_limit_attendance_requests_per_minute: int = 60
+    rate_limit_import_requests_per_hour: int = 10
+    rate_limit_export_requests_per_hour: int = 30
 
     @computed_field
     @property

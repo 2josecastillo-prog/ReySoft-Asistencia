@@ -1,6 +1,6 @@
 # ReySoft-Asistencia Security Review
 
-Date: 2026-05-15
+Date: 2026-05-25
 
 ## Threat Model
 
@@ -23,6 +23,7 @@ Trust boundaries:
 Attacker-controlled inputs:
 
 - Login credentials.
+- High-frequency requests to authentication, import, export and attendance endpoints.
 - CRUD payloads for school users.
 - IDs in route paths.
 - WhatsApp template text.
@@ -44,6 +45,8 @@ Attacker-controlled inputs:
 - One attendance per student per day is enforced.
 - One primary guardian per student is enforced by a partial unique index and service logic.
 - Important mutations write audit logs.
+- FastAPI applies IP-based rate limiting with `429` responses and rate-limit headers.
+- Vercel Firewall blocks common scanner/probe paths before they reach the application.
 
 ## Findings
 
@@ -54,3 +57,5 @@ No high-confidence exploitable cross-tenant, authentication bypass, password exp
 - JWT is delivered through `HttpOnly`, `Secure` in production, `SameSite=Lax` cookies and paired with short token lifetimes and careful XSS prevention. User tokens are invalidated when the related password changes.
 - Uploaded logos are stored on local disk; production deployments must persist and back up `UPLOAD_DIR`.
 - Parent access by phone only remains intentionally lightweight because OTP was removed by product decision.
+- Backend rate limiting is in-memory per running instance. For multi-instance persistent hosting, use Redis-backed counters.
+- Vercel WAF rate limiting could not be enabled on the current plan; only deny-based WAF rules were published.

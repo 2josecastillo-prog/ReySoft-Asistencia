@@ -11,6 +11,12 @@ from sqlalchemy.pool import StaticPool
 
 SQLALCHEMY_DATABASE_URL = "sqlite+pysqlite:///:memory:"
 os.environ["DATABASE_URL"] = SQLALCHEMY_DATABASE_URL
+os.environ["RATE_LIMIT_DEFAULT_REQUESTS_PER_MINUTE"] = "10000"
+os.environ["RATE_LIMIT_AUTH_REQUESTS_PER_MINUTE"] = "10000"
+os.environ["RATE_LIMIT_PARENT_AUTH_REQUESTS_PER_MINUTE"] = "10000"
+os.environ["RATE_LIMIT_ATTENDANCE_REQUESTS_PER_MINUTE"] = "10000"
+os.environ["RATE_LIMIT_IMPORT_REQUESTS_PER_HOUR"] = "10000"
+os.environ["RATE_LIMIT_EXPORT_REQUESTS_PER_HOUR"] = "10000"
 
 from app.core.security import hash_password
 from app.database.base import Base
