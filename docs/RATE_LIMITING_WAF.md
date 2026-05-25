@@ -43,7 +43,7 @@ Vercel Firewall tiene DDoS automatico. En este proyecto se publico una regla WAF
 
 - `ReySoft block common probes`
 - Accion: `deny`.
-- Duracion: `1h`.
+- Duracion persistente: no configurada. Solo se bloquea la solicitud que coincide con la regla.
 - Bloquea rutas comunes de escaneo:
   - `/.env`
   - `/.git`
