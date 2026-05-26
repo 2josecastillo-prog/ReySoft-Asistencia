@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
 from app.core.config import settings
+from app.core.csrf import clear_csrf_cookie, set_csrf_cookie
 from app.core.security import clear_access_cookie, create_access_token, set_access_cookie
 from app.database.session import get_db
 from app.dependencies.parent_auth import get_current_parent_guardian
@@ -100,12 +101,14 @@ def parent_login(payload: ParentLoginRequest, response: Response, db: Session = 
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="La cuenta del centro educativo expiro.")
     token = create_access_token(subject=str(guardian.id), extra_claims={"scope": "parent"})
     set_access_cookie(response, settings.parent_auth_cookie_name, token)
+    set_csrf_cookie(response)
     return {"access_token": token, "token_type": "bearer", "guardian": guardian}
 
 
 @router.post("/logout")
 def parent_logout(response: Response):
     clear_access_cookie(response, settings.parent_auth_cookie_name)
+    clear_csrf_cookie(response)
     return {"message": "Sesión cerrada."}
 
 

@@ -195,15 +195,19 @@ def test_user_login_sets_http_only_cookie_and_logout_clears_it(client: TestClien
     login = client.post("/auth/login", json={"email": "admin-one@example.com", "password": "SchoolAdmin123!"})
     assert login.status_code == 200, login.text
     assert "reysoft_asistencia_token" in login.headers["set-cookie"]
+    assert "reysoft_asistencia_csrf_token" in login.headers["set-cookie"]
     assert "HttpOnly" in login.headers["set-cookie"]
+    csrf_token = client.cookies.get("reysoft_asistencia_csrf_token")
+    assert csrf_token
 
     me = client.get("/auth/me")
     assert me.status_code == 200, me.text
     assert me.json()["email"] == "admin-one@example.com"
 
-    logout = client.post("/auth/logout")
+    logout = client.post("/auth/logout", headers={"X-CSRF-Token": csrf_token})
     assert logout.status_code == 200, logout.text
     assert "reysoft_asistencia_token" in logout.headers["set-cookie"]
+    assert "reysoft_asistencia_csrf_token" in logout.headers["set-cookie"]
     assert "Max-Age=0" in logout.headers["set-cookie"]
 
     blocked = client.get("/auth/me")
@@ -1156,10 +1160,13 @@ def test_parent_logs_in_with_phone_and_sees_only_their_students_attendance(clien
     login = client.post("/parents/login", json={"phone": "(809) 555-1234"})
     assert login.status_code == 200, login.text
     assert "reysoft_asistencia_parent_token" in login.headers["set-cookie"]
+    assert "reysoft_asistencia_csrf_token" in login.headers["set-cookie"]
     assert "HttpOnly" in login.headers["set-cookie"]
     assert login.json()["guardian"]["id"] == guardian["id"]
     assert login.json()["guardian"]["phone"] == "8095551234"
     parent_headers = {"Authorization": f"Bearer {login.json()['access_token']}"}
+    parent_csrf_token = client.cookies.get("reysoft_asistencia_csrf_token")
+    assert parent_csrf_token
 
     me = client.get("/parents/me")
     assert me.status_code == 200, me.text
@@ -1182,9 +1189,10 @@ def test_parent_logs_in_with_phone_and_sees_only_their_students_attendance(clien
     wrong_phone = client.post("/parents/login", json={"phone": "809-000-0000"})
     assert wrong_phone.status_code == 401
 
-    logout = client.post("/parents/logout")
+    logout = client.post("/parents/logout", headers={"X-CSRF-Token": parent_csrf_token})
     assert logout.status_code == 200, logout.text
     assert "reysoft_asistencia_parent_token" in logout.headers["set-cookie"]
+    assert "reysoft_asistencia_csrf_token" in logout.headers["set-cookie"]
     assert "Max-Age=0" in logout.headers["set-cookie"]
     blocked_after_logout = client.get("/parents/me")
     assert blocked_after_logout.status_code == 401

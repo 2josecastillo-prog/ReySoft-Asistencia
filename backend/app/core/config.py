@@ -20,7 +20,11 @@ class Settings(BaseSettings):
     jwt_audience: str = "reysoft-api"
     auth_cookie_name: str = "reysoft_asistencia_token"
     parent_auth_cookie_name: str = "reysoft_asistencia_parent_token"
+    csrf_protection_enabled: bool = True
+    csrf_cookie_name: str = "reysoft_asistencia_csrf_token"
+    csrf_header_name: str = "X-CSRF-Token"
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
+    trusted_hosts: str = "localhost,127.0.0.1,testserver,*.vercel.app,reysoft-asistencia.vercel.app"
     initial_super_admin_email: str = "superadmin@reysoft-asistencia.com"
     initial_super_admin_password: str = "SuperAdmin123!"
     database_pool_mode: str = "default"
@@ -30,6 +34,7 @@ class Settings(BaseSettings):
     supabase_storage_bucket: str = "school-logos"
     upload_dir: str = "uploads"
     max_logo_upload_bytes: int = 2 * 1024 * 1024
+    max_request_body_bytes: int = 10 * 1024 * 1024
     rate_limit_enabled: bool = True
     rate_limit_default_requests_per_minute: int = 120
     rate_limit_auth_requests_per_minute: int = 5
@@ -42,6 +47,11 @@ class Settings(BaseSettings):
     @property
     def cors_origin_list(self) -> list[str]:
         return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+
+    @computed_field
+    @property
+    def trusted_host_list(self) -> list[str]:
+        return [host.strip() for host in self.trusted_hosts.split(",") if host.strip()]
 
     @model_validator(mode="after")
     def reject_default_secret_in_production(self) -> "Settings":

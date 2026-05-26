@@ -622,3 +622,17 @@ RN-166. Los datos normalizados se guardan por relacion, no como texto duplicado:
 - asistencia usa `student_id`
 
 RN-167. La base de datos y la aplicacion trabajan juntas: la app valida reglas con mensajes claros y PostgreSQL refuerza reglas criticas con constraints e indices.
+
+## 22. Protecciones OWASP Top 10
+
+RN-168. Las acciones de escritura autenticadas por cookies deben exigir un token CSRF firmado y enviado por la cabecera `X-CSRF-Token`.
+
+RN-169. Los clientes API que usen `Authorization: Bearer` pueden operar sin cookie CSRF, porque no dependen de autenticacion automatica del navegador.
+
+RN-170. El backend debe rechazar solicitudes cuyo `Content-Length` exceda `MAX_REQUEST_BODY_BYTES`.
+
+RN-171. El backend debe aceptar solo hosts configurados en `TRUSTED_HOSTS`.
+
+RN-172. Los errores inesperados deben registrarse en logs internos y responder al cliente con un mensaje generico sin stack trace ni detalles internos.
+
+RN-173. El proyecto debe mantener un mapa vivo de controles OWASP en `docs/OWASP_TOP_10_CONTROLS.md`.

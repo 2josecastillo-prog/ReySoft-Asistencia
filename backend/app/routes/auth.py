@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
-from app.core.permissions import ensure_active_organization
 from app.core.config import settings
+from app.core.csrf import clear_csrf_cookie, set_csrf_cookie
+from app.core.permissions import ensure_active_organization
 from app.core.security import clear_access_cookie, create_access_token, set_access_cookie, verify_password
 from app.database.session import get_db
 from app.dependencies.auth import get_current_user
@@ -34,12 +35,14 @@ def login(payload: LoginRequest, response: Response, db: Session = Depends(get_d
         extra_claims={"role": user.role.value, "token_version": user.token_version},
     )
     set_access_cookie(response, settings.auth_cookie_name, access_token)
+    set_csrf_cookie(response)
     return {"access_token": access_token, "token_type": "bearer", "user": user}
 
 
 @router.post("/logout")
 def logout(response: Response):
     clear_access_cookie(response, settings.auth_cookie_name)
+    clear_csrf_cookie(response)
     return {"message": "Sesión cerrada."}
 
 
