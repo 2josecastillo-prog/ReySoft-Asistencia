@@ -636,3 +636,9 @@ RN-171. El backend debe aceptar solo hosts configurados en `TRUSTED_HOSTS`.
 RN-172. Los errores inesperados deben registrarse en logs internos y responder al cliente con un mensaje generico sin stack trace ni detalles internos.
 
 RN-173. El proyecto debe mantener un mapa vivo de controles OWASP en `docs/OWASP_TOP_10_CONTROLS.md`.
+
+RN-174. Toda respuesta de API debe incluir `X-Request-ID` generado por el backend o preservado desde una cabecera valida enviada por el cliente.
+
+RN-175. Las solicitudes de escritura con cuerpo deben usar un `Content-Type` permitido. Por defecto se aceptan `application/json` y `multipart/form-data`.
+
+RN-176. La configuracion transversal de CORS, rate limiting, limite de tamano, CSRF, Trusted Host, cabeceras, request id y content type debe aplicarse desde una capa central de seguridad.

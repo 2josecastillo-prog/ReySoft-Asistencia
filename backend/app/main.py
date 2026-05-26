@@ -2,16 +2,11 @@ import logging
 from pathlib import Path
 
 from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.responses import JSONResponse
 
 from app.core.config import settings
-from app.core.csrf import CsrfProtectionMiddleware
-from app.core.rate_limit import RateLimitMiddleware
-from app.core.request_limits import RequestSizeLimitMiddleware
-from app.core.security_headers import SecurityHeadersMiddleware
+from app.core.security_layer import apply_security_layer
 from app.routes import admin, attendance, auth, courses, dashboard, guardians, notifications, organization, parents, reports, students, users, whatsapp
 
 logger = logging.getLogger(__name__)
@@ -22,18 +17,7 @@ def create_app() -> FastAPI:
     if settings.storage_backend.lower() == "local":
         Path(settings.upload_dir).mkdir(parents=True, exist_ok=True)
         app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=settings.cors_origin_list,
-        allow_credentials=True,
-        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-        allow_headers=["Authorization", "Content-Type", "Accept", "X-Requested-With", settings.csrf_header_name],
-    )
-    app.add_middleware(RateLimitMiddleware)
-    app.add_middleware(RequestSizeLimitMiddleware)
-    app.add_middleware(CsrfProtectionMiddleware)
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.trusted_host_list)
-    app.add_middleware(SecurityHeadersMiddleware)
+    apply_security_layer(app)
 
     app.include_router(auth.router)
     app.include_router(admin.router)

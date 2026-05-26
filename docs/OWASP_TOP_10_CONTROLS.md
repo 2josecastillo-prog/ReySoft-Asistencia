@@ -25,6 +25,8 @@ Controles implementados:
 - `TrustedHostMiddleware` con allowlist configurable por `TRUSTED_HOSTS`.
 - CORS con origenes, metodos y cabeceras explicitas.
 - Rechazo de `SECRET_KEY` por defecto en produccion.
+- `X-Request-ID` para trazabilidad operativa de solicitudes y errores.
+- Guardia de `Content-Type` para rechazar escrituras con tipos inesperados.
 
 ## A03 Software Supply Chain Failures
 
@@ -68,6 +70,7 @@ Controles implementados:
 - Organizaciones inactivas bloqueadas aun con credenciales validas.
 - Límite de tamano de request para reducir abuso por payloads excesivos.
 - Rate limiting por IP para login, padres, asistencia, importacion y exportacion.
+- Capa central `apply_security_layer(app)` para aplicar defensas de forma consistente.
 
 ## A07 Authentication Failures
 

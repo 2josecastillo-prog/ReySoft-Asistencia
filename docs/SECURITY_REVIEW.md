@@ -40,6 +40,8 @@ Attacker-controlled inputs:
 - Production refuses the default `SECRET_KEY`.
 - Cookie-authenticated unsafe requests require a signed CSRF token mirrored in `X-CSRF-Token`.
 - Bearer-token API clients remain supported without requiring browser CSRF cookies.
+- Write requests with a body must use an allowed content type (`application/json` or `multipart/form-data` by default).
+- Every response includes or preserves `X-Request-ID` for operational traceability.
 - Request bodies above `MAX_REQUEST_BODY_BYTES` are rejected with `413`.
 - `TrustedHostMiddleware` rejects hosts outside `TRUSTED_HOSTS`.
 - Unhandled backend exceptions are logged and returned as a generic Spanish error message.
@@ -57,6 +59,7 @@ Attacker-controlled inputs:
 - FastAPI applies IP-based rate limiting with `429` responses and rate-limit headers.
 - Vercel Firewall blocks common scanner/probe paths before they reach the application.
 - OWASP Top 10 controls are mapped in `docs/OWASP_TOP_10_CONTROLS.md`.
+- The application security layer is documented in `docs/SECURITY_LAYER.md`.
 
 ## Findings
 
