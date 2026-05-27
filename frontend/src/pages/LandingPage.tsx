@@ -140,7 +140,7 @@ export function LandingPage() {
         <div className="rounded-lg bg-slate-950 p-8 text-white">
           <h2 id="contacto-administrador" className="text-2xl font-semibold">Contacto del administrador</h2>
           <address className="mt-2 not-italic text-slate-300">
-            admin@reysoft-asistencia.com - +1 809 555 0000
+            compuhelp.rd@gmail.com - +1 (829) 616-6060
           </address>
         </div>
       </section>

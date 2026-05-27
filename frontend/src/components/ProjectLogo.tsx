@@ -7,5 +7,5 @@ interface ProjectLogoProps {
 }
 
 export function ProjectLogo({ className = '', variant = 'full' }: ProjectLogoProps) {
-  return <img src={variant === 'mark' ? logoMark : logoFull} alt="ReySoft-Asistencia" className={className} />;
+  return <img src={variant === 'mark' ? logoMark : logoFull} alt="ReySoft Multiservices" className={className} />;
 }

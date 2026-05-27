@@ -3,6 +3,9 @@ import { useLocation } from 'react-router-dom';
 
 const siteUrl = 'https://reysoft-asistencia.vercel.app';
 const siteName = 'ReySoft-Asistencia';
+const organizationName = 'ReySoft Multiservices';
+const adminContactEmail = 'compuhelp.rd@gmail.com';
+const adminContactPhone = '+1 (829) 616-6060';
 const defaultDescription =
   'Software de asistencia escolar para centros educativos: estudiantes, tutores, cursos, reportes, WhatsApp y portal de padres en una plataforma segura.';
 const publicTitle = 'ReySoft-Asistencia | Software de asistencia escolar para centros educativos';
@@ -52,16 +55,16 @@ function publicStructuredData() {
     {
       '@context': 'https://schema.org',
       '@type': 'Organization',
-      name: siteName,
+      name: organizationName,
       url: siteUrl,
       logo: `${siteUrl}/logo.svg`,
-      email: 'admin@reysoft-asistencia.com',
+      email: adminContactEmail,
       contactPoint: [
         {
           '@type': 'ContactPoint',
           contactType: 'sales',
-          email: 'admin@reysoft-asistencia.com',
-          telephone: '+1-809-555-0000',
+          email: adminContactEmail,
+          telephone: adminContactPhone,
           availableLanguage: ['es']
         }
       ]
