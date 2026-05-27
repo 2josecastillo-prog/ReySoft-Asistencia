@@ -1,0 +1,19 @@
+{
+  "name": "ReySoft-Asistencia",
+  "short_name": "ReySoft",
+  "description": "Software de asistencia escolar para centros educativos.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563EB",
+  "lang": "es-DO",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

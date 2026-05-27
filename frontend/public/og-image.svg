@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">ReySoft-Asistencia</title>
+  <desc id="desc">Software de asistencia escolar para centros educativos.</desc>
+  <rect width="1200" height="630" fill="#F8FAFC"/>
+  <rect x="70" y="70" width="1060" height="490" rx="28" fill="#FFFFFF" stroke="#DDE7F3"/>
+  <circle cx="170" cy="200" r="72" fill="#2563EB"/>
+  <path fill="#FFFFFF" d="M132 203h76c16 0 29 13 29 29v12c0 16-13 29-29 29h-27l-26 21v-21h-23c-16 0-29-13-29-29v-12c0-16 13-29 29-29Z"/>
+  <path fill="#F59E0B" d="M109 160 170 134l61 26c4 2 4 7 0 9l-61 25-61-25c-4-2-4-7 0-9Z"/>
+  <text x="285" y="205" fill="#0F172A" font-family="Inter, Arial, sans-serif" font-size="72" font-weight="800">ReySoft-Asistencia</text>
+  <text x="285" y="285" fill="#2563EB" font-family="Inter, Arial, sans-serif" font-size="42" font-weight="700">Software de asistencia escolar</text>
+  <text x="285" y="355" fill="#334155" font-family="Inter, Arial, sans-serif" font-size="30">Asistencia, estudiantes, tutores, reportes, WhatsApp y portal de padres.</text>
+  <text x="285" y="430" fill="#64748B" font-family="Inter, Arial, sans-serif" font-size="26">Plataforma SaaS segura para centros educativos.</text>
+</svg>

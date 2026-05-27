@@ -69,5 +69,6 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             response.headers["Cache-Control"] = "no-store"
             response.headers["Pragma"] = "no-cache"
             response.headers["Expires"] = "0"
+            response.headers["X-Robots-Tag"] = "noindex, nofollow"
 
         return response

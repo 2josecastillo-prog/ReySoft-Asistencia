@@ -14,12 +14,14 @@ import { StaffUsersPage } from './pages/StaffUsersPage';
 import { StudentsPage } from './pages/StudentsPage';
 import { WhatsAppPage } from './pages/WhatsAppPage';
 import { SessionTimeoutModal } from './components/SessionTimeoutModal';
+import { Seo } from './components/Seo';
 import { DashboardLayout } from './layouts/DashboardLayout';
 import { ProtectedRoute } from './routes/ProtectedRoute';
 
 export default function App() {
   return (
     <>
+      <Seo />
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
