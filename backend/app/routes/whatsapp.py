@@ -10,7 +10,7 @@ from app.dependencies.auth import get_current_user
 from app.models import AttendanceRecord, User, WhatsAppMessageTemplate
 from app.schemas.whatsapp import WhatsAppLinkResponse, WhatsAppTemplateResponse, WhatsAppTemplateUpdate
 from app.services.templates import ensure_default_whatsapp_templates
-from app.services.whatsapp import build_whatsapp_link
+from app.services.whatsapp import build_whatsapp_link, mark_parent_message_sent
 
 router = APIRouter(prefix="/whatsapp", tags=["whatsapp"])
 
@@ -68,4 +68,7 @@ def create_whatsapp_link(
     )
     if not attendance:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Registro de asistencia no encontrado.")
-    return build_whatsapp_link(db, attendance)
+    link = build_whatsapp_link(db, attendance)
+    mark_parent_message_sent(attendance, current_user.id)
+    db.commit()
+    return link

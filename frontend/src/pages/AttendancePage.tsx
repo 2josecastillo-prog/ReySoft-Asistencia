@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from 'react';
-import { MessageCircle, Plus, Trash2 } from 'lucide-react';
+import { CheckCircle2, Clock3, MessageCircle, Plus, Trash2 } from 'lucide-react';
 import { api, extractError } from '../api/client';
 import { EmptyState } from '../components/EmptyState';
 import { StatusBadge } from '../components/StatusBadge';
@@ -8,6 +8,13 @@ import { useAuth } from '../auth/AuthContext';
 import { attendanceStatusLabels } from '../utils/labels';
 
 const statuses: AttendanceStatus[] = ['arrived', 'absent', 'late', 'early_pickup', 'excused'];
+
+function formatSentAt(value?: string | null) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat('es-DO', { dateStyle: 'short', timeStyle: 'short' }).format(date);
+}
 
 export function AttendancePage() {
   const { user } = useAuth();
@@ -51,6 +58,7 @@ export function AttendancePage() {
       const response = await api.post<{ url: string; message: string }>(`/attendance/${record.id}/whatsapp-link`);
       setPreview(response.data.message);
       window.open(response.data.url, '_blank', 'noopener,noreferrer');
+      await loadData();
     } catch (err) {
       setError(extractError(err));
     }
@@ -67,6 +75,55 @@ export function AttendancePage() {
   }, []);
 
   const studentName = (id: string) => students.find((student) => student.id === id)?.full_name ?? 'Estudiante';
+  const pendingMessageRecords = records.filter((record) => !record.parent_message_sent_at);
+  const sentMessageRecords = records.filter((record) => record.parent_message_sent_at);
+
+  function renderRecordsTable(items: AttendanceRecord[], emptyLabel: string, sentGroup = false) {
+    if (items.length === 0) return <EmptyState label={emptyLabel} />;
+    return (
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-slate-100 text-xs uppercase text-slate-500">
+            <tr>
+              <th className="p-3">Fecha</th>
+              <th className="p-3">Estudiante</th>
+              <th className="p-3">Estado</th>
+              <th className="p-3">Hora</th>
+              <th className="p-3">Mensaje</th>
+              <th className="p-3">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((record) => (
+              <tr className="border-t border-slate-100" key={record.id}>
+                <td className="p-3">{record.attendance_date}</td>
+                <td className="p-3 font-medium">{studentName(record.student_id)}</td>
+                <td className="p-3"><StatusBadge value={record.status} /></td>
+                <td className="p-3">{record.arrival_time ?? record.departure_time ?? '-'}</td>
+                <td className="p-3">
+                  {record.parent_message_sent_at ? (
+                    <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-700">
+                      <CheckCircle2 size={14} /> Enviado {formatSentAt(record.parent_message_sent_at)}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700">
+                      <Clock3 size={14} /> Pendiente
+                    </span>
+                  )}
+                </td>
+                <td className="flex flex-wrap gap-2 p-3">
+                  <button className="btn-secondary" onClick={() => openWhatsApp(record)}>
+                    <MessageCircle size={16} />{sentGroup ? 'Reenviar' : 'Enviar WhatsApp'}
+                  </button>
+                  {canDelete && <button className="btn-danger" onClick={() => removeRecord(record.id)}><Trash2 size={16} /></button>}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
 
   return (
     <div className="grid gap-5">
@@ -87,29 +144,24 @@ export function AttendancePage() {
         <button className="btn-primary"><Plus size={16} />Registrar</button>
       </form>
       {preview && <div className="rounded-md bg-blue-50 p-3 text-sm text-blue-800">{preview}</div>}
-      <div className="card overflow-hidden">
-        {records.length === 0 ? <EmptyState label="No hay asistencia registrada" /> : (
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-100 text-xs uppercase text-slate-500">
-              <tr><th className="p-3">Fecha</th><th className="p-3">Estudiante</th><th className="p-3">Estado</th><th className="p-3">Hora</th><th className="p-3">Acciones</th></tr>
-            </thead>
-            <tbody>
-              {records.map((record) => (
-                <tr className="border-t border-slate-100" key={record.id}>
-                  <td className="p-3">{record.attendance_date}</td>
-                  <td className="p-3 font-medium">{studentName(record.student_id)}</td>
-                  <td className="p-3"><StatusBadge value={record.status} /></td>
-                  <td className="p-3">{record.arrival_time ?? record.departure_time}</td>
-                  <td className="flex flex-wrap gap-2 p-3">
-                    <button className="btn-secondary" onClick={() => openWhatsApp(record)}><MessageCircle size={16} />WhatsApp</button>
-                    {canDelete && <button className="btn-danger" onClick={() => removeRecord(record.id)}><Trash2 size={16} /></button>}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+      <section className="grid gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h3 className="text-lg font-semibold text-slate-950">Pendientes de enviar a padres</h3>
+          <span className="rounded-md bg-amber-50 px-3 py-1 text-sm font-semibold text-amber-700">{pendingMessageRecords.length}</span>
+        </div>
+        <div className="card overflow-hidden">
+          {renderRecordsTable(pendingMessageRecords, 'No hay mensajes pendientes de enviar')}
+        </div>
+      </section>
+      <section className="grid gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h3 className="text-lg font-semibold text-slate-950">Mensajes enviados a padres</h3>
+          <span className="rounded-md bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-700">{sentMessageRecords.length}</span>
+        </div>
+        <div className="card overflow-hidden">
+          {renderRecordsTable(sentMessageRecords, 'No hay mensajes enviados todavía', true)}
+        </div>
+      </section>
     </div>
   );
 }

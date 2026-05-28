@@ -35,6 +35,7 @@ class AttendanceResponse(BaseModel):
     arrival_time: time | None
     departure_time: time | None
     notes: str | None
+    parent_message_sent_at: datetime | None
+    parent_message_sent_by_user_id: UUID | None
     created_at: datetime
     updated_at: datetime
-

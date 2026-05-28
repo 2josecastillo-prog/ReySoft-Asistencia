@@ -157,6 +157,8 @@ CREATE TABLE attendance_records (
     arrival_time TIME,
     departure_time TIME,
     notes TEXT,
+    parent_message_sent_at TIMESTAMP,
+    parent_message_sent_by_user_id UUID REFERENCES users(id) ON DELETE SET NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
@@ -270,6 +272,9 @@ ON attendance_records(attendance_date);
 
 CREATE INDEX idx_attendance_status
 ON attendance_records(status);
+
+CREATE INDEX idx_attendance_parent_message_sent_at
+ON attendance_records(parent_message_sent_at);
 
 CREATE UNIQUE INDEX uq_attendance_regular_record_per_student_day
 ON attendance_records(student_id, attendance_date)

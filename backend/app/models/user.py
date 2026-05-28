@@ -36,4 +36,8 @@ class User(PersonNameMixin, TimestampMixin, Base):
     password_changed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=False), nullable=True)
 
     organization = relationship("Organization", back_populates="users")
-    attendance_records = relationship("AttendanceRecord", back_populates="recorded_by")
+    attendance_records = relationship(
+        "AttendanceRecord",
+        back_populates="recorded_by",
+        foreign_keys="AttendanceRecord.recorded_by_user_id",
+    )

@@ -160,6 +160,8 @@ erDiagram
         time arrival_time
         time departure_time
         text notes
+        timestamp parent_message_sent_at
+        uuid parent_message_sent_by_user_id FK
         timestamp created_at
         timestamp updated_at
     }
@@ -408,6 +410,8 @@ Campos relevantes:
 - `arrival_time`: hora de llegada.
 - `departure_time`: hora de retiro.
 - `notes`: notas.
+- `parent_message_sent_at`: fecha y hora en que se marco como enviado el mensaje al padre/tutor.
+- `parent_message_sent_by_user_id`: usuario que genero/marco el mensaje como enviado, nullable.
 
 Restricciones actuales:
 

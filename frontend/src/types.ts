@@ -88,6 +88,8 @@ export interface AttendanceRecord {
   arrival_time?: string | null;
   departure_time?: string | null;
   notes?: string | null;
+  parent_message_sent_at?: string | null;
+  parent_message_sent_by_user_id?: string | null;
 }
 
 export interface WhatsAppTemplate {

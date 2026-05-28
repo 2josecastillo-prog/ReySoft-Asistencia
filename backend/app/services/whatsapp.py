@@ -1,12 +1,19 @@
 from urllib.parse import quote
+from uuid import UUID
 
 from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.core.security import current_utc_naive
 from app.models import AttendanceRecord, Guardian, Organization, Student, StudentGuardian, WhatsAppMessageTemplate
 from app.services.templates import ensure_default_whatsapp_templates
 from app.utils.phone import clean_phone_number
+
+
+def mark_parent_message_sent(attendance: AttendanceRecord, user_id: UUID) -> None:
+    attendance.parent_message_sent_at = current_utc_naive()
+    attendance.parent_message_sent_by_user_id = user_id
 
 
 def build_whatsapp_link(db: Session, attendance: AttendanceRecord) -> dict[str, str]:

@@ -12,7 +12,7 @@ from app.models import AttendanceRecord, AttendanceStatus, Student, User
 from app.schemas.attendance import AttendanceCreate, AttendanceResponse, AttendanceUpdate
 from app.schemas.whatsapp import WhatsAppLinkResponse
 from app.services.audit import create_audit_log
-from app.services.whatsapp import build_whatsapp_link
+from app.services.whatsapp import build_whatsapp_link, mark_parent_message_sent
 
 router = APIRouter(prefix="/attendance", tags=["attendance"])
 
@@ -179,4 +179,7 @@ def create_attendance_whatsapp_link(
 ):
     ensure_school_user(current_user)
     attendance = _get_attendance_or_404(db, attendance_id, current_user.organization_id)
-    return build_whatsapp_link(db, attendance)
+    link = build_whatsapp_link(db, attendance)
+    mark_parent_message_sent(attendance, current_user.id)
+    db.commit()
+    return link

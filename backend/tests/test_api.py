@@ -869,6 +869,7 @@ def test_attendance_is_unique_per_student_day_and_generates_whatsapp_link(client
     }
     first = client.post("/attendance", json=payload, headers=headers)
     assert first.status_code == 201, first.text
+    assert first.json()["parent_message_sent_at"] is None
     duplicate = client.post("/attendance", json=payload, headers=headers)
     assert duplicate.status_code == 409
 
@@ -876,6 +877,9 @@ def test_attendance_is_unique_per_student_day_and_generates_whatsapp_link(client
     assert link.status_code == 200, link.text
     assert link.json()["phone"] == "8095551234"
     assert link.json()["url"].startswith("https://wa.me/8095551234?text=")
+    sent_record = client.get(f"/attendance/{first.json()['id']}", headers=headers)
+    assert sent_record.status_code == 200, sent_record.text
+    assert sent_record.json()["parent_message_sent_at"] is not None
 
 
 def test_attendance_allows_second_record_only_for_early_pickup(client: TestClient):

@@ -1,7 +1,7 @@
 import uuid
-from datetime import date, time
+from datetime import date, datetime, time
 
-from sqlalchemy import Enum, ForeignKey, Index, Text, Uuid, text
+from sqlalchemy import DateTime, Enum, ForeignKey, Index, Text, Uuid, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql.sqltypes import Date, Time
 
@@ -33,6 +33,7 @@ class AttendanceRecord(TimestampMixin, Base):
         Index("idx_attendance_student_id", "student_id"),
         Index("idx_attendance_date", "attendance_date"),
         Index("idx_attendance_status", "status"),
+        Index("idx_attendance_parent_message_sent_at", "parent_message_sent_at"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
@@ -52,6 +53,10 @@ class AttendanceRecord(TimestampMixin, Base):
     arrival_time: Mapped[time | None] = mapped_column(Time)
     departure_time: Mapped[time | None] = mapped_column(Time)
     notes: Mapped[str | None] = mapped_column(Text)
+    parent_message_sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=False), nullable=True)
+    parent_message_sent_by_user_id: Mapped[uuid.UUID | None] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
 
     student = relationship("Student", back_populates="attendance_records")
-    recorded_by = relationship("User", back_populates="attendance_records")
+    recorded_by = relationship("User", back_populates="attendance_records", foreign_keys=[recorded_by_user_id])

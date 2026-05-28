@@ -437,6 +437,8 @@ RN-111. El telefono del tutor se limpia antes de generar la URL.
 
 RN-112. El mensaje se codifica para URL.
 
+RN-112A. Al generar el enlace de WhatsApp desde un registro de asistencia, el sistema marca ese registro con `parent_message_sent_at` y `parent_message_sent_by_user_id`. Esta marca permite separar en pantalla los registros pendientes de mensaje y los registros ya enviados a padres.
+
 RN-113. `school_admin` puede editar plantillas.
 
 RN-114. `staff` puede consultar y usar plantillas, pero no editarlas.
