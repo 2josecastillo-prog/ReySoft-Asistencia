@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+  <title id="title">Panel institucional de asistencia escolar</title>
+  <desc id="desc">Ilustracion de un aula moderna con paneles de asistencia, estudiantes y comunicacion escolar.</desc>
+  <defs>
+    <linearGradient id="wall" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#e2e8f0"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#2563EB"/>
+      <stop offset="1" stop-color="#0f3ea8"/>
+    </linearGradient>
+    <linearGradient id="ink" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#1E293B"/>
+      <stop offset="1" stop-color="#0f172a"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="22" stdDeviation="18" flood-color="#0f172a" flood-opacity=".16"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="720" fill="url(#wall)"/>
+  <path d="M0 515h1200v205H0z" fill="#fff"/>
+  <path d="M94 612h1002" stroke="#cbd5e1" stroke-width="2"/>
+
+  <g filter="url(#shadow)">
+    <rect x="114" y="94" width="500" height="344" fill="#fff" stroke="#cbd5e1"/>
+    <rect x="140" y="122" width="448" height="62" fill="url(#ink)"/>
+    <text x="165" y="162" fill="#fff" font-family="Inter, Arial, sans-serif" font-size="26" font-weight="700">Asistencia diaria</text>
+    <g transform="translate(142 215)">
+      <rect width="128" height="84" fill="#eff6ff" stroke="#bfdbfe"/>
+      <circle cx="34" cy="32" r="16" fill="url(#blue)"/>
+      <path d="M60 28h46M60 46h34" stroke="#2563EB" stroke-width="8" stroke-linecap="square"/>
+      <text x="22" y="68" fill="#1e293b" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700">Llegadas</text>
+    </g>
+    <g transform="translate(304 215)">
+      <rect width="128" height="84" fill="#fff7ed" stroke="#fed7aa"/>
+      <circle cx="34" cy="32" r="16" fill="#F59E0B"/>
+      <path d="M60 28h46M60 46h34" stroke="#F59E0B" stroke-width="8" stroke-linecap="square"/>
+      <text x="22" y="68" fill="#1e293b" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700">Tardanzas</text>
+    </g>
+    <g transform="translate(466 215)">
+      <rect width="96" height="84" fill="#fef2f2" stroke="#fecaca"/>
+      <circle cx="30" cy="32" r="16" fill="#dc2626"/>
+      <path d="M54 28h25M54 46h18" stroke="#dc2626" stroke-width="8" stroke-linecap="square"/>
+      <text x="18" y="68" fill="#1e293b" font-family="Inter, Arial, sans-serif" font-size="15" font-weight="700">Aus.</text>
+    </g>
+    <path d="M142 334h420M142 368h320M142 402h375" stroke="#cbd5e1" stroke-width="12"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="682" y="126" width="358" height="470" fill="#fff" stroke="#cbd5e1"/>
+    <rect x="714" y="158" width="294" height="58" fill="#eff6ff" stroke="#bfdbfe"/>
+    <circle cx="746" cy="187" r="16" fill="url(#blue)"/>
+    <path d="M778 180h165M778 198h108" stroke="#2563EB" stroke-width="8" stroke-linecap="square"/>
+    <text x="714" y="260" fill="#1e293b" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="700">Centro educativo</text>
+    <text x="714" y="296" fill="#64748b" font-family="Inter, Arial, sans-serif" font-size="18">Usuarios, padres y reportes</text>
+    <g transform="translate(714 338)">
+      <rect width="294" height="56" fill="#f8fafc" stroke="#e2e8f0"/>
+      <path d="M24 28h68" stroke="#2563EB" stroke-width="10"/>
+      <path d="M118 28h132" stroke="#cbd5e1" stroke-width="10"/>
+    </g>
+    <g transform="translate(714 414)">
+      <rect width="294" height="56" fill="#f8fafc" stroke="#e2e8f0"/>
+      <path d="M24 28h98" stroke="#F59E0B" stroke-width="10"/>
+      <path d="M148 28h102" stroke="#cbd5e1" stroke-width="10"/>
+    </g>
+    <g transform="translate(714 490)">
+      <rect width="294" height="56" fill="#f8fafc" stroke="#e2e8f0"/>
+      <path d="M24 28h48" stroke="#16a34a" stroke-width="10"/>
+      <path d="M98 28h152" stroke="#cbd5e1" stroke-width="10"/>
+    </g>
+  </g>
+
+  <g transform="translate(178 474)" filter="url(#shadow)">
+    <rect x="0" y="0" width="350" height="112" fill="#fff" stroke="#cbd5e1"/>
+    <circle cx="62" cy="56" r="32" fill="url(#blue)"/>
+    <path d="M112 38h190M112 66h132" stroke="#cbd5e1" stroke-width="12"/>
+    <path d="M50 57l9 9 19-24" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="square"/>
+  </g>
+
+  <g opacity=".72">
+    <path d="M78 88h92M78 118h54M1036 84h78M1064 114h50" stroke="#94a3b8" stroke-width="3"/>
+    <circle cx="104" cy="160" r="8" fill="#F59E0B"/>
+    <circle cx="1094" cy="158" r="8" fill="#2563EB"/>
+  </g>
+</svg>

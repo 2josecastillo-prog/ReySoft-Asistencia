@@ -4,9 +4,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { extractError } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import { ProjectLogo } from '../components/ProjectLogo';
-
-const loginImage =
-  'https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=1400&q=80';
+import loginImage from '../assets/login-school-hero.svg';
 
 const loginHighlights = [
   { label: 'Centros activos', value: 'Acceso controlado', icon: ShieldCheck },
