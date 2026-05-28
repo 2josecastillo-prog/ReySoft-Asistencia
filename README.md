@@ -61,7 +61,7 @@ docs/DEPLOYMENT_VERCEL_SUPABASE.md
 
 ## Test Credentials
 
-- Super admin: `superadmin@reysoft-asistencia.com` / `SuperAdmin123!`
+- Super admin: `compuhelp.rd@gmail.com` / valor de `INITIAL_SUPER_ADMIN_PASSWORD` en `backend/.env`
 - School admin: `admin@colegioprueba.edu.do` / `SchoolAdmin123!`
 - Staff: `staff@colegioprueba.edu.do` / `Staff12345!`
 - Parent portal phone: `8095551234`

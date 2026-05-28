@@ -22,6 +22,7 @@ from app.services.templates import create_default_whatsapp_templates
 
 SUPER_ADMIN_EMAIL = settings.initial_super_admin_email
 SUPER_ADMIN_PASSWORD = settings.initial_super_admin_password
+LEGACY_SUPER_ADMIN_EMAIL = "superadmin@reysoft-asistencia.com"
 SCHOOL_ADMIN_EMAIL = "admin@colegioprueba.edu.do"
 SCHOOL_ADMIN_PASSWORD = "SchoolAdmin123!"
 STAFF_EMAIL = "staff@colegioprueba.edu.do"
@@ -31,13 +32,38 @@ SEED_ATTENDANCE_DATE = date(2026, 5, 12)
 
 def get_or_create_super_admin(db):
     user = db.scalar(select(User).where(User.email == SUPER_ADMIN_EMAIL))
+    legacy_user = None
+    if SUPER_ADMIN_EMAIL != LEGACY_SUPER_ADMIN_EMAIL:
+        legacy_user = db.scalar(select(User).where(User.email == LEGACY_SUPER_ADMIN_EMAIL))
     if user:
+        if legacy_user and legacy_user.id != user.id:
+            legacy_user.is_active = False
+        user.organization_id = None
+        user.first_name = "Administrador"
+        user.middle_name = "Global"
+        user.last_name = "ReySoft"
+        user.second_surname = "Multiservices"
+        user.password_hash = hash_password(SUPER_ADMIN_PASSWORD)
+        user.role = UserRole.super_admin
+        user.is_active = True
         return user
+    if legacy_user:
+        legacy_user.organization_id = None
+        legacy_user.first_name = "Administrador"
+        legacy_user.middle_name = "Global"
+        legacy_user.last_name = "ReySoft"
+        legacy_user.second_surname = "Multiservices"
+        legacy_user.email = SUPER_ADMIN_EMAIL
+        legacy_user.password_hash = hash_password(SUPER_ADMIN_PASSWORD)
+        legacy_user.role = UserRole.super_admin
+        legacy_user.is_active = True
+        return legacy_user
     user = User(
         organization_id=None,
         first_name="Administrador",
         middle_name="Global",
-        last_name="ReySoft-Asistencia",
+        last_name="ReySoft",
+        second_surname="Multiservices",
         email=SUPER_ADMIN_EMAIL,
         password_hash=hash_password(SUPER_ADMIN_PASSWORD),
         role=UserRole.super_admin,

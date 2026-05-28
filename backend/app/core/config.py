@@ -28,8 +28,8 @@ class Settings(BaseSettings):
     allowed_write_content_types: str = "application/json,multipart/form-data"
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
     trusted_hosts: str = "localhost,127.0.0.1,testserver,*.vercel.app,reysoft-asistencia.vercel.app"
-    initial_super_admin_email: str = "superadmin@reysoft-asistencia.com"
-    initial_super_admin_password: str = "SuperAdmin123!"
+    initial_super_admin_email: str = "compuhelp.rd@gmail.com"
+    initial_super_admin_password: str = "change-this-super-admin-password"
     database_pool_mode: str = "default"
     storage_backend: str = "local"
     supabase_url: str | None = None

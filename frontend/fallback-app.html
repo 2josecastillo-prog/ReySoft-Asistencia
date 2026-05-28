@@ -77,7 +77,7 @@
         <label class="field">Correo electrónico<input id="email" class="input" value="admin@colegioprueba.edu.do"></label>
         <label class="field">Contraseña<input class="input" type="password" value="SchoolAdmin123!"></label>
         <button class="btn primary" onclick="login()">Entrar</button>
-        <p class="muted">Demo: superadmin@reysoft-asistencia.com / SuperAdmin123! o admin@colegioprueba.edu.do / SchoolAdmin123!</p>
+        <p class="muted">Demo: compuhelp.rd@gmail.com / contraseña definida en backend/.env o admin@colegioprueba.edu.do / SchoolAdmin123!</p>
         <p id="loginMsg" style="color:#dc2626;"></p>
       </section>
     </main>
@@ -107,7 +107,7 @@
       }
       function login() {
         var email = document.getElementById('email').value.toLowerCase();
-        if (email === 'superadmin@reysoft-asistencia.com') return dashboard('admin');
+        if (email === 'compuhelp.rd@gmail.com') return dashboard('admin');
         if (email === 'admin@colegioprueba.edu.do') return dashboard('school');
         document.getElementById('loginMsg').textContent = 'Tu cuenta está pendiente de activación. Contacta al administrador.';
       }
