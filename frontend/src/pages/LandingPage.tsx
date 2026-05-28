@@ -1,149 +1,219 @@
-import { ArrowRight, BarChart3, CheckCircle2, ClipboardCheck, MessageCircle, Phone, ShieldCheck, Users } from 'lucide-react';
+import {
+  ArrowRight,
+  BarChart3,
+  Bell,
+  BookOpen,
+  CalendarCheck,
+  CheckCircle2,
+  ClipboardCheck,
+  GraduationCap,
+  LogIn,
+  MessageCircle,
+  Phone,
+  Search,
+  ShieldCheck,
+  Users
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ProjectLogo } from '../components/ProjectLogo';
 
 const heroImage =
   'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1800&q=80';
 
-const summaryItems = [
-  ['Problema', 'Los registros manuales dispersan asistencia, tutores y mensajes criticos.'],
-  ['Beneficios', 'Cada centro opera con datos propios, roles definidos, reportes claros y estado de servicio controlado.'],
-  ['Como funciona', 'El administrador global registra el centro, crea su administrador y habilita el acceso autorizado.']
-];
-
 const featureItems = [
-  { icon: ShieldCheck, title: 'Multiempresa seguro', text: 'Aislamiento por centro educativo en todos los modulos escolares.' },
-  { icon: Users, title: 'Gestion escolar', text: 'Cursos, tutores, estudiantes, relaciones familiares y asistencia diaria.' },
-  { icon: MessageCircle, title: 'WhatsApp escolar', text: 'Plantillas por estado con variables dinamicas y tutor principal.' },
-  { icon: ClipboardCheck, title: 'Control de asistencia', text: 'Estados de llegada, ausencia, tardanza, excusa y retiro temprano.' },
-  { icon: BarChart3, title: 'Reportes institucionales', text: 'Reportes por estudiante y por curso exportables para seguimiento escolar.' },
-  { icon: Phone, title: 'Portal de padres', text: 'Acceso para tutores mediante telefono registrado y datos asociados.' }
+  { icon: ShieldCheck, title: 'Multiempresa seguro', text: 'Datos escolares aislados por centro, rol y organización.' },
+  { icon: CalendarCheck, title: 'Asistencia diaria', text: 'Llegadas, ausencias, tardanzas, excusas y retiros tempranos.' },
+  { icon: MessageCircle, title: 'Mensajes a padres', text: 'WhatsApp automático o asistido según el registro tomado.' },
+  { icon: BarChart3, title: 'Reportes', text: 'Informes por estudiante y por curso con exportación institucional.' }
 ];
 
-const mainFunctions = [
-  'Alta privada por administrador global',
-  'Auditoria de acciones importantes',
-  'Personalizacion de logo, colores y footer',
-  'Portal de padres por telefono',
-  'Importacion y exportacion de estudiantes en Excel y CSV',
-  'Reportes de asistencia con ausencias, excusas y alertas por color'
+const modules = [
+  ['Cursos', 'Secciones, años escolares y estado activo.'],
+  ['Tutores', 'Relaciones familiares y contacto principal.'],
+  ['Estudiantes', 'Importación Excel/CSV y control de estado.'],
+  ['Auditoría', 'Trazabilidad de cambios críticos.']
 ];
 
-const faqs = [
-  [
-    'Que es ReySoft-Asistencia?',
-    'Es una plataforma web para centros educativos que centraliza asistencia, estudiantes, tutores, reportes y comunicacion por WhatsApp.'
-  ],
-  [
-    'La informacion de cada centro esta separada?',
-    'Si. Cada centro trabaja con datos aislados por organizacion y los usuarios escolares solo acceden a su propio centro.'
-  ],
-  [
-    'Los padres pueden consultar asistencia?',
-    'Si. Los tutores registrados acceden por telefono para ver estudiantes asociados y registros de asistencia.'
-  ]
+const processSteps = [
+  'El superadministrador registra el centro y su usuario escolar.',
+  'El centro accede solo cuando está activo y dentro de vigencia.',
+  'El personal registra asistencia y notifica a los padres.',
+  'La dirección revisa reportes, auditoría y tendencias.'
+];
+
+const reportHighlights = [
+  { label: 'Asistencia diaria', value: '4 estados + excusa', icon: ClipboardCheck },
+  { label: 'Portal de padres', value: 'Acceso por teléfono', icon: Users },
+  { label: 'Datos escolares', value: 'Excel y CSV', icon: BookOpen }
 ];
 
 export function LandingPage() {
   return (
-    <div className="bg-white">
-      <section className="relative min-h-[86vh] overflow-hidden">
-        <img
-          src={heroImage}
-          alt="Centro educativo usando software de asistencia escolar"
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-slate-950/65" />
-        <div className="relative mx-auto flex min-h-[86vh] max-w-6xl flex-col justify-center px-5 py-20 text-white">
-          <p className="mb-4 text-sm font-semibold uppercase tracking-wide text-amber-300">SaaS para centros educativos</p>
-          <ProjectLogo className="h-24 w-auto max-w-[min(92vw,520px)] drop-shadow-[0_12px_24px_rgba(0,0,0,0.5)]" />
-          <h1 className="mt-6 max-w-3xl text-4xl font-bold leading-tight md:text-5xl">
-            Software de asistencia escolar para centros educativos
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-100">
-            ReySoft-Asistencia centraliza asistencia diaria, estudiantes, tutores, reportes institucionales,
-            mensajes de WhatsApp y portal de padres en una plataforma SaaS segura.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link className="btn-primary" to="/login">
-              Iniciar sesion <ArrowRight size={18} />
+    <div className="min-h-screen bg-[#f7f8fa] text-slate-950">
+      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur">
+        <div className="mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center px-4 py-3 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+          <nav className="hidden items-center gap-5 md:flex">
+            <a href="#plataforma" className="hover:text-slate-950">Plataforma</a>
+            <a href="#modulos" className="hover:text-slate-950">Módulos</a>
+            <a href="#reportes" className="hover:text-slate-950">Reportes</a>
+            <a href="#contacto" className="hover:text-slate-950">Contacto</a>
+          </nav>
+          <Link to="/" className="justify-self-center" aria-label="ReySoft-Asistencia">
+            <ProjectLogo className="h-9 w-auto" />
+          </Link>
+          <div className="flex items-center justify-end gap-3">
+            <span className="hidden sm:inline">ESP / RD</span>
+            <Search size={16} aria-hidden="true" />
+            <Link to="/parents/login" aria-label="Acceso para padres">
+              <Phone size={16} />
             </Link>
-            <Link className="btn-secondary border-white/30 bg-white/10 text-white hover:bg-white/20" to="/parents/login">
-              <Phone size={18} /> Acceso padres
+            <Link to="/login" aria-label="Iniciar sesión">
+              <LogIn size={16} />
             </Link>
           </div>
         </div>
-      </section>
+      </header>
 
-      <section className="mx-auto grid max-w-6xl gap-6 px-5 py-14 md:grid-cols-3" aria-labelledby="resumen-plataforma">
-        <h2 id="resumen-plataforma" className="sr-only">Resumen de la plataforma de asistencia escolar</h2>
-        {summaryItems.map(([title, text]) => (
-          <article className="rounded-lg border border-slate-200 p-6" key={title}>
-            <h3 className="text-lg font-semibold text-slate-950">{title}</h3>
-            <p className="mt-2 text-sm leading-6 text-slate-600">{text}</p>
-          </article>
-        ))}
-      </section>
+      <main>
+        <section id="plataforma" className="mx-auto grid max-w-7xl gap-8 px-4 py-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,430px)] lg:py-12">
+          <div className="min-w-0">
+            <div className="mb-4 flex items-center justify-between border-b border-slate-300 pb-3 text-[11px] uppercase tracking-wide text-slate-500">
+              <span>Inicio / Software escolar / Asistencia</span>
+              <span>SKU: reysoft-asistencia</span>
+            </div>
+            <div className="overflow-hidden border border-slate-200 bg-white">
+              <img
+                src={heroImage}
+                alt="Centro educativo usando una plataforma de asistencia"
+                className="h-[360px] w-full object-cover md:h-[520px]"
+              />
+            </div>
+            <div className="mt-5 grid gap-4 md:grid-cols-4">
+              {featureItems.map(({ icon: Icon, title, text }) => (
+                <article className="border border-slate-200 bg-white p-4" key={title}>
+                  <Icon className="text-brand" size={24} />
+                  <h2 className="mt-4 text-sm font-semibold">{title}</h2>
+                  <p className="mt-2 text-xs leading-5 text-slate-500">{text}</p>
+                </article>
+              ))}
+            </div>
+          </div>
 
-      <section className="bg-slate-50 py-14" aria-labelledby="modulos-escolares">
-        <div className="mx-auto max-w-6xl px-5">
-          <h2 id="modulos-escolares" className="text-2xl font-semibold text-slate-950">
-            Modulos para gestion de asistencia escolar
-          </h2>
-          <div className="mt-6 grid gap-5 md:grid-cols-3">
-            {featureItems.map(({ icon: Icon, title, text }) => (
-              <article className="rounded-lg bg-white p-6 shadow-sm ring-1 ring-slate-200" key={title}>
-                <Icon className="text-blue-600" size={28} />
-                <h3 className="mt-4 font-semibold">{title}</h3>
+          <aside className="self-start border border-slate-200 bg-white p-6 lg:sticky lg:top-20">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">SaaS para centros educativos</p>
+            <h1 className="mt-5 text-5xl font-semibold tracking-[-0.02em] text-slate-950 md:text-6xl">ReySoft-Asistencia</h1>
+            <p className="mt-5 text-sm leading-7 text-slate-600">
+              Plataforma profesional para controlar asistencia, estudiantes, tutores, reportes y comunicaciones
+              institucionales desde un entorno multiempresa seguro.
+            </p>
+
+            <div className="mt-7 grid gap-4 border-y border-slate-200 py-5">
+              <div>
+                <p className="text-xs uppercase tracking-wide text-slate-500">Paleta institucional</p>
+                <div className="mt-3 flex gap-2">
+                  <span className="h-9 w-9 border border-slate-200 bg-brand" title="Color primario" />
+                  <span className="h-9 w-9 border border-slate-200 bg-ink" title="Color secundario" />
+                  <span className="h-9 w-9 border border-slate-200 bg-accent" title="Color de acento" />
+                </div>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wide text-slate-500">Operación</p>
+                <p className="mt-2 text-2xl font-semibold">Centros activos, usuarios protegidos y reportes claros</p>
+              </div>
+            </div>
+
+            <div className="mt-6 grid grid-cols-[44px_1fr_1fr] gap-2">
+              <Link className="btn-secondary px-0" to="/parents/login" aria-label="Acceso padres">
+                <Phone size={17} />
+              </Link>
+              <Link className="btn-primary" to="/login">
+                Iniciar sesión
+              </Link>
+              <a className="btn-secondary" href="#contacto">
+                Contacto
+              </a>
+            </div>
+
+            <div className="mt-6 grid gap-3 text-xs text-slate-500">
+              <div className="flex items-center gap-2">
+                <ShieldCheck size={16} className="text-brand" />
+                JWT, roles y aislamiento por organización
+              </div>
+              <div className="flex items-center gap-2">
+                <Bell size={16} className="text-brand" />
+                Notificaciones, auditoría y actividad por centro
+              </div>
+            </div>
+          </aside>
+        </section>
+
+        <section id="modulos" className="mx-auto grid max-w-7xl gap-8 border-t border-slate-200 px-4 py-12 lg:grid-cols-[minmax(280px,380px)_1fr]">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Módulos principales</p>
+            <h2 className="mt-3 text-4xl font-semibold tracking-[-0.02em]">Gestión escolar con estructura de producción</h2>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            {modules.map(([title, text]) => (
+              <article className="border border-slate-200 bg-white p-5" key={title}>
+                <h3 className="text-lg font-semibold">{title}</h3>
                 <p className="mt-2 text-sm leading-6 text-slate-600">{text}</p>
               </article>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="mx-auto max-w-6xl px-5 py-14" aria-labelledby="funciones-principales">
-        <h2 id="funciones-principales" className="text-2xl font-semibold text-slate-950">
-          Funciones principales del sistema de asistencia escolar
-        </h2>
-        <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-600">
-          La plataforma esta pensada para centros que necesitan ordenar datos academicos, reducir procesos manuales
-          y mantener trazabilidad sobre asistencia, usuarios, tutores y comunicaciones.
-        </p>
-        <div className="mt-6 grid gap-3 md:grid-cols-2">
-          {mainFunctions.map((item) => (
-            <div className="flex items-center gap-3 rounded-md border border-slate-200 p-4" key={item}>
-              <CheckCircle2 className="text-emerald-600" size={20} />
-              <span className="text-sm font-medium text-slate-700">{item}</span>
+        <section id="reportes" className="mx-auto grid max-w-7xl gap-8 border-t border-slate-200 px-4 py-12 lg:grid-cols-[1fr_420px]">
+          <div className="border border-slate-200 bg-white p-6">
+            <div className="grid gap-4 md:grid-cols-3">
+              {reportHighlights.map(({ label, value, icon: Icon }) => (
+                <div className="border border-slate-100 p-4" key={label}>
+                  <Icon className="text-accent" size={24} />
+                  <p className="mt-4 text-xs uppercase tracking-wide text-slate-500">{label}</p>
+                  <p className="mt-2 font-semibold">{value}</p>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="bg-white py-14" aria-labelledby="preguntas-frecuentes">
-        <div className="mx-auto max-w-6xl px-5">
-          <h2 id="preguntas-frecuentes" className="text-2xl font-semibold text-slate-950">
-            Preguntas frecuentes sobre ReySoft-Asistencia
-          </h2>
-          <div className="mt-6 grid gap-4 md:grid-cols-3">
-            {faqs.map(([question, answer]) => (
-              <article className="rounded-lg border border-slate-200 p-5" key={question}>
-                <h3 className="font-semibold text-slate-950">{question}</h3>
-                <p className="mt-2 text-sm leading-6 text-slate-600">{answer}</p>
-              </article>
-            ))}
+            <div className="mt-8 grid gap-4 md:grid-cols-2">
+              <div className="min-h-56 border border-slate-100 bg-slate-50 p-5">
+                <GraduationCap className="text-brand" size={32} />
+                <p className="mt-8 text-3xl font-semibold">Reportes por estudiante</p>
+                <p className="mt-3 text-sm leading-6 text-slate-600">Fechas, horas, estados, excusas convertidas y señales por color.</p>
+              </div>
+              <div className="min-h-56 border border-slate-100 bg-slate-50 p-5">
+                <BarChart3 className="text-brand" size={32} />
+                <p className="mt-8 text-3xl font-semibold">Reportes por curso</p>
+                <p className="mt-3 text-sm leading-6 text-slate-600">Lectura institucional para dirección, coordinación y seguimiento.</p>
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
+          <div className="border border-slate-200 bg-white p-6">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Cómo opera</p>
+            <div className="mt-5 divide-y divide-slate-200">
+              {processSteps.map((step, index) => (
+                <div className="grid grid-cols-[48px_1fr] gap-4 py-4" key={step}>
+                  <span className="flex h-10 w-10 items-center justify-center border border-slate-300 text-sm font-semibold">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <p className="text-sm leading-6 text-slate-600">{step}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
 
-      <section className="mx-auto max-w-6xl px-5 py-14" aria-labelledby="contacto-administrador">
-        <div className="rounded-lg bg-slate-950 p-8 text-white">
-          <h2 id="contacto-administrador" className="text-2xl font-semibold">Contacto del administrador</h2>
-          <address className="mt-2 not-italic text-slate-300">
-            compuhelp.rd@gmail.com - +1 (829) 616-6060
-          </address>
-        </div>
-      </section>
+        <section id="contacto" className="mx-auto max-w-7xl border-t border-slate-200 px-4 py-10">
+          <div className="grid gap-6 border border-slate-200 bg-white p-6 md:grid-cols-[1fr_auto] md:items-center">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Contacto del administrador</p>
+              <h2 className="mt-2 text-2xl font-semibold">compuhelp.rd@gmail.com</h2>
+              <p className="mt-1 text-sm text-slate-600">+1 (829) 616-6060</p>
+            </div>
+            <Link className="btn-primary" to="/login">
+              Entrar al sistema <ArrowRight size={18} />
+            </Link>
+          </div>
+        </section>
+      </main>
     </div>
   );
 }
