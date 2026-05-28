@@ -14,7 +14,7 @@ School admins can import and export students with `.xlsx` Excel files or Excel-c
 .\run-local.bat
 ```
 
-The local runner prepares PostgreSQL in `.pgdata` on `localhost:55432`, installs dependencies when needed, runs Alembic migrations, runs the development seed, and starts backend/frontend in the background:
+The local runner is designed for a freshly cloned Windows machine. In native mode it detects Python 3.12+, Node.js/npm and PostgreSQL 15+, prepares PostgreSQL in `.pgdata` on `localhost:55432`, installs dependencies when needed, runs Alembic migrations, runs the development seed, and starts backend/frontend in the background. If a required local dependency is missing and Docker Desktop is available, it automatically switches to Docker Compose mode.
 
 - Frontend: `http://127.0.0.1:5173`
 - Backend API: `http://127.0.0.1:8000`
@@ -26,7 +26,14 @@ Useful runner commands:
 .\run-local.bat --stop
 .\run-local.bat --reinstall
 .\run-local.bat --docker
+.\run-local.bat --backend-port 8001 --frontend-port 5174 --postgres-port 55433
+.\run-local.bat --no-docker-fallback
 ```
+
+For the smoothest first run on another device, install either:
+
+- Native stack: Python 3.12+, Node.js LTS, PostgreSQL 15+.
+- Docker stack: Docker Desktop only, then run `.\run-local.bat --docker`.
 
 ## Run with Docker
 

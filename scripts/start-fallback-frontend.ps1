@@ -7,7 +7,16 @@ $nodeCandidates = @(
   (Join-Path $Root ".tools\node\node.exe"),
   (Get-Command node.exe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source -ErrorAction SilentlyContinue),
   (Join-Path $env:USERPROFILE ".cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe")
-) | Where-Object { $_ -and (Test-Path $_) }
+)
+
+foreach ($basePath in @($env:ProgramFiles, ${env:ProgramFiles(x86)}, $env:LOCALAPPDATA)) {
+  if ($basePath) {
+    $relativeNodePath = if ($basePath -eq $env:LOCALAPPDATA) { "Programs\nodejs\node.exe" } else { "nodejs\node.exe" }
+    $nodeCandidates += Join-Path $basePath $relativeNodePath
+  }
+}
+
+$nodeCandidates = $nodeCandidates | Where-Object { $_ -and (Test-Path $_) }
 
 if (-not $nodeCandidates) {
   throw "node.exe was not found. Install Node.js LTS or use the bundled Codex runtime."

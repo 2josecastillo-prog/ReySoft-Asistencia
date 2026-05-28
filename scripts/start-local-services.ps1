@@ -14,6 +14,30 @@ $backendPython = Join-Path $backendDir ".venv\Scripts\python.exe"
 
 New-Item -ItemType Directory -Force -Path $runtimePath | Out-Null
 
+function Normalize-ProcessPathEnvironment {
+  $pathValues = @()
+  $environmentVariables = [Environment]::GetEnvironmentVariables("Process")
+
+  foreach ($key in $environmentVariables.Keys) {
+    if ([string]::Equals([string]$key, "Path", [StringComparison]::OrdinalIgnoreCase)) {
+      $value = [string]$environmentVariables[$key]
+      if ($value) {
+        $pathValues += $value
+      }
+    }
+  }
+
+  if (-not $pathValues) {
+    return
+  }
+
+  Remove-Item Env:PATH -ErrorAction SilentlyContinue
+  Remove-Item Env:Path -ErrorAction SilentlyContinue
+  $env:Path = ($pathValues | Select-Object -Unique) -join [IO.Path]::PathSeparator
+}
+
+Normalize-ProcessPathEnvironment
+
 function Test-HttpOk([string]$Url) {
   try {
     $response = Invoke-WebRequest -UseBasicParsing -Uri $Url -TimeoutSec 3
@@ -28,7 +52,16 @@ function Find-Node {
     (Join-Path $rootPath ".tools\node\node.exe"),
     (Get-Command node.exe -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Source -ErrorAction SilentlyContinue),
     (Join-Path $env:USERPROFILE ".cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe")
-  ) | Where-Object { $_ -and (Test-Path $_) }
+  )
+
+  foreach ($basePath in @($env:ProgramFiles, ${env:ProgramFiles(x86)}, $env:LOCALAPPDATA)) {
+    if ($basePath) {
+      $relativeNodePath = if ($basePath -eq $env:LOCALAPPDATA) { "Programs\nodejs\node.exe" } else { "nodejs\node.exe" }
+      $candidates += Join-Path $basePath $relativeNodePath
+    }
+  }
+
+  $candidates = $candidates | Where-Object { $_ -and (Test-Path $_) }
 
   if (-not $candidates) {
     throw "No se encontro node.exe para levantar Vite."
