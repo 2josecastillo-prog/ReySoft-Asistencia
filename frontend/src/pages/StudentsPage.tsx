@@ -16,16 +16,18 @@ interface StudentFormState {
   primary_guardian_id: string;
 }
 
-const blankForm: StudentFormState = {
-  first_name: '',
-  middle_name: '',
-  last_name: '',
-  second_surname: '',
-  student_code: '',
-  course_id: '',
-  guardian_ids: [],
-  primary_guardian_id: ''
-};
+function createBlankStudentForm(): StudentFormState {
+  return {
+    first_name: '',
+    middle_name: '',
+    last_name: '',
+    second_surname: '',
+    student_code: '',
+    course_id: '',
+    guardian_ids: [],
+    primary_guardian_id: ''
+  };
+}
 
 interface StudentImportResponse {
   created: number;
@@ -39,7 +41,7 @@ export function StudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [courses, setCourses] = useState<Course[]>([]);
   const [guardians, setGuardians] = useState<Guardian[]>([]);
-  const [form, setForm] = useState<StudentFormState>(blankForm);
+  const [form, setForm] = useState<StudentFormState>(createBlankStudentForm);
   const [courseFilter, setCourseFilter] = useState('');
   const [search, setSearch] = useState('');
   const [guardianSearch, setGuardianSearch] = useState('');
@@ -91,6 +93,12 @@ export function StudentsPage() {
   function guardianDetail(id: string) {
     const guardian = guardians.find((item) => item.id === id);
     return [guardian?.phone, guardian?.relationship].filter(Boolean).join(' · ');
+  }
+
+  function resetStudentCreationForm() {
+    setForm(createBlankStudentForm());
+    setGuardianSearch('');
+    setGuardianRelationshipFilter('');
   }
 
   async function loadData() {
@@ -156,7 +164,7 @@ export function StudentsPage() {
         guardian_ids: form.guardian_ids,
         primary_guardian_id: form.primary_guardian_id || form.guardian_ids[0]
       });
-      setForm(blankForm);
+      resetStudentCreationForm();
       await loadData();
       setMessage('Estudiante creado.');
     } catch (err) {
