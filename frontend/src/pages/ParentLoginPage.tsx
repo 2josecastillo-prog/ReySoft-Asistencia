@@ -46,7 +46,7 @@ export function ParentLoginPage() {
             <div className="relative">
               <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
               <input
-                className="form-input pl-10"
+                className="form-input form-input-icon-left"
                 inputMode="tel"
                 placeholder="(809) 555-1234"
                 value={phone}

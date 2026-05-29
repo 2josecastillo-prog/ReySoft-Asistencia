@@ -355,7 +355,7 @@ export function StudentsPage() {
               <label className="relative">
                 <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                 <input
-                  className="form-input pl-9"
+                  className="form-input form-input-icon-left"
                   placeholder="Buscar tutor por nombre, teléfono o relación"
                   value={guardianSearch}
                   onChange={(event) => setGuardianSearch(event.target.value)}
