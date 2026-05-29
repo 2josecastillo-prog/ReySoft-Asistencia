@@ -9,6 +9,26 @@ import { attendanceStatusLabels } from '../utils/labels';
 
 const statuses: AttendanceStatus[] = ['arrived', 'absent', 'late', 'early_pickup', 'excused'];
 
+interface AttendanceFormState {
+  student_id: string;
+  attendance_date: string;
+  status: AttendanceStatus | '';
+  arrival_time: string;
+  departure_time: string;
+  notes: string;
+}
+
+function createBlankAttendanceForm(): AttendanceFormState {
+  return {
+    student_id: '',
+    attendance_date: '',
+    status: '',
+    arrival_time: '',
+    departure_time: '',
+    notes: ''
+  };
+}
+
 function formatSentAt(value?: string | null) {
   if (!value) return '';
   const date = new Date(value);
@@ -21,7 +41,7 @@ export function AttendancePage() {
   const canDelete = user?.role === 'school_admin';
   const [records, setRecords] = useState<AttendanceRecord[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
-  const [form, setForm] = useState({ student_id: '', attendance_date: new Date().toISOString().slice(0, 10), status: 'arrived' as AttendanceStatus, arrival_time: '', departure_time: '', notes: '' });
+  const [form, setForm] = useState<AttendanceFormState>(createBlankAttendanceForm);
   const [error, setError] = useState('');
   const [preview, setPreview] = useState('');
 
@@ -40,6 +60,12 @@ export function AttendancePage() {
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
+    setError('');
+    setPreview('');
+    if (!form.status) {
+      setError('Selecciona un estado de asistencia.');
+      return;
+    }
     try {
       await api.post('/attendance', {
         ...form,
@@ -47,6 +73,7 @@ export function AttendancePage() {
         departure_time: form.departure_time || null,
         notes: form.notes || null
       });
+      setForm(createBlankAttendanceForm());
       await loadData();
     } catch (err) {
       setError(extractError(err));
@@ -135,7 +162,8 @@ export function AttendancePage() {
           {students.map((student) => <option key={student.id} value={student.id}>{student.full_name}</option>)}
         </select>
         <input className="form-input" type="date" value={form.attendance_date} onChange={(e) => setForm({ ...form, attendance_date: e.target.value })} required />
-        <select className="form-input" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as AttendanceStatus })}>
+        <select className="form-input" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as AttendanceStatus | '' })} required>
+          <option value="">Estado</option>
           {statuses.map((status) => <option key={status} value={status}>{attendanceStatusLabels[status]}</option>)}
         </select>
         <input className="form-input" type="time" value={form.arrival_time} onChange={(e) => setForm({ ...form, arrival_time: e.target.value })} />
