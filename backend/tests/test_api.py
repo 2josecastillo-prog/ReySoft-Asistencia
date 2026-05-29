@@ -50,6 +50,26 @@ def test_vercel_frontend_security_headers_are_configured():
     assert "frame-ancestors 'none'" in headers["content-security-policy"]
 
 
+def test_frontend_monitoring_endpoint_accepts_sanitized_error_report(client: TestClient):
+    response = client.post(
+        "/monitoring/frontend-error",
+        json={
+            "message": "Error renderizando pantalla",
+            "name": "TypeError",
+            "stack": "TypeError: prueba",
+            "path": "/login",
+            "source": "index.js",
+            "line": 10,
+            "column": 20,
+            "user_agent": "pytest",
+            "release": "test",
+        },
+    )
+
+    assert response.status_code == 202
+    assert response.json() == {"status": "accepted"}
+
+
 def create_school_by_super_admin(client: TestClient, suffix: str = "one", status: str = "active") -> dict:
     headers = auth_headers(client, "superadmin@example.com", "SuperAdmin123!")
     payload = {

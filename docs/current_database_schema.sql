@@ -310,3 +310,158 @@ ON audit_logs(user_id);
 
 CREATE INDEX idx_audit_logs_action
 ON audit_logs(action);
+
+-- Database-level tenant integrity guards.
+-- These triggers reinforce backend validations and prevent cross-organization
+-- links if a future endpoint or script skips application-level checks.
+
+CREATE OR REPLACE FUNCTION public.enforce_student_course_organization()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+    course_organization_id uuid;
+BEGIN
+    SELECT organization_id INTO course_organization_id
+    FROM public.courses
+    WHERE id = NEW.course_id;
+
+    IF course_organization_id IS NULL THEN
+        RAISE EXCEPTION 'course_id % does not exist', NEW.course_id
+            USING ERRCODE = 'foreign_key_violation';
+    END IF;
+
+    IF course_organization_id <> NEW.organization_id THEN
+        RAISE EXCEPTION 'El curso no pertenece a la organizacion del estudiante.'
+            USING ERRCODE = 'check_violation';
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_students_course_same_organization
+BEFORE INSERT OR UPDATE OF organization_id, course_id
+ON public.students
+FOR EACH ROW
+EXECUTE FUNCTION public.enforce_student_course_organization();
+
+CREATE OR REPLACE FUNCTION public.enforce_student_guardian_organization()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+    student_organization_id uuid;
+    guardian_organization_id uuid;
+BEGIN
+    SELECT organization_id INTO student_organization_id
+    FROM public.students
+    WHERE id = NEW.student_id;
+
+    SELECT organization_id INTO guardian_organization_id
+    FROM public.guardians
+    WHERE id = NEW.guardian_id;
+
+    IF student_organization_id IS NULL THEN
+        RAISE EXCEPTION 'student_id % does not exist', NEW.student_id
+            USING ERRCODE = 'foreign_key_violation';
+    END IF;
+
+    IF guardian_organization_id IS NULL THEN
+        RAISE EXCEPTION 'guardian_id % does not exist', NEW.guardian_id
+            USING ERRCODE = 'foreign_key_violation';
+    END IF;
+
+    IF student_organization_id <> guardian_organization_id THEN
+        RAISE EXCEPTION 'El tutor no pertenece a la organizacion del estudiante.'
+            USING ERRCODE = 'check_violation';
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_student_guardians_same_organization
+BEFORE INSERT OR UPDATE OF student_id, guardian_id
+ON public.student_guardians
+FOR EACH ROW
+EXECUTE FUNCTION public.enforce_student_guardian_organization();
+
+CREATE OR REPLACE FUNCTION public.enforce_attendance_organization()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+    student_organization_id uuid;
+    recorded_by_organization_id uuid;
+    parent_message_user_organization_id uuid;
+BEGIN
+    SELECT organization_id INTO student_organization_id
+    FROM public.students
+    WHERE id = NEW.student_id;
+
+    IF student_organization_id IS NULL THEN
+        RAISE EXCEPTION 'student_id % does not exist', NEW.student_id
+            USING ERRCODE = 'foreign_key_violation';
+    END IF;
+
+    IF student_organization_id <> NEW.organization_id THEN
+        RAISE EXCEPTION 'La asistencia no pertenece a la organizacion del estudiante.'
+            USING ERRCODE = 'check_violation';
+    END IF;
+
+    IF NEW.recorded_by_user_id IS NOT NULL THEN
+        SELECT organization_id INTO recorded_by_organization_id
+        FROM public.users
+        WHERE id = NEW.recorded_by_user_id;
+
+        IF recorded_by_organization_id IS NULL OR recorded_by_organization_id <> NEW.organization_id THEN
+            RAISE EXCEPTION 'El usuario que registra la asistencia no pertenece a la organizacion.'
+                USING ERRCODE = 'check_violation';
+        END IF;
+    END IF;
+
+    IF NEW.parent_message_sent_by_user_id IS NOT NULL THEN
+        SELECT organization_id INTO parent_message_user_organization_id
+        FROM public.users
+        WHERE id = NEW.parent_message_sent_by_user_id;
+
+        IF parent_message_user_organization_id IS NULL OR parent_message_user_organization_id <> NEW.organization_id THEN
+            RAISE EXCEPTION 'El usuario que marco el mensaje no pertenece a la organizacion.'
+                USING ERRCODE = 'check_violation';
+        END IF;
+    END IF;
+
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER trg_attendance_same_organization
+BEFORE INSERT OR UPDATE OF organization_id, student_id, recorded_by_user_id, parent_message_sent_by_user_id
+ON public.attendance_records
+FOR EACH ROW
+EXECUTE FUNCTION public.enforce_attendance_organization();
+
+-- Supabase RLS hardening.
+-- The API server uses direct database credentials and still enforces tenant
+-- isolation in backend code. RLS is enabled to block accidental direct client
+-- access through anon/authenticated Supabase roles.
+
+ALTER TABLE public.organizations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.courses ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.guardians ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.students ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.student_guardians ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.attendance_records ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.whatsapp_message_templates ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.subscription_activations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.alembic_version ENABLE ROW LEVEL SECURITY;

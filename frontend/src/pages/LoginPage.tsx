@@ -52,7 +52,7 @@ export function LoginPage() {
         </div>
       </header>
 
-      <section className="mx-auto grid min-h-[calc(100vh-61px)] max-w-7xl gap-8 px-4 py-8 lg:grid-cols-[minmax(0,1fr)_minmax(360px,460px)]">
+      <section className="mx-auto grid min-h-[calc(100vh-61px)] w-full max-w-7xl gap-8 overflow-hidden px-3 py-8 sm:px-4 lg:grid-cols-[minmax(0,1fr)_minmax(360px,460px)]">
         <div className="hidden min-w-0 lg:block">
           <div className="mb-4 flex items-center justify-between border-b border-slate-300 pb-3 text-[11px] uppercase tracking-wide text-slate-500">
             <span>Acceso / Panel escolar / Sesión segura</span>
@@ -72,9 +72,9 @@ export function LoginPage() {
           </div>
         </div>
 
-        <form className="self-start border border-slate-200 bg-white p-6 shadow-sm lg:sticky lg:top-8" onSubmit={onSubmit}>
+        <form className="login-panel box-border min-w-0 border border-slate-200 bg-white p-5 shadow-sm sm:p-6 lg:sticky lg:top-8" onSubmit={onSubmit}>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Panel institucional</p>
-          <h1 className="mt-5 text-5xl font-semibold tracking-[-0.02em]">Iniciar sesión</h1>
+          <h1 className="mt-5 text-4xl font-semibold md:text-5xl">Iniciar sesión</h1>
           <p className="mt-4 text-sm leading-7 text-slate-600">
             Acceso para superadministrador, administradores escolares y personal autorizado.
           </p>
@@ -103,22 +103,22 @@ export function LoginPage() {
               />
             </label>
             {error && <div className="border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
-            <button className="btn-primary h-12" disabled={loading}>
+            <button className="btn-primary h-12 w-full" disabled={loading}>
               {loading ? 'Entrando...' : 'Entrar'} {!loading && <ArrowRight size={18} />}
             </button>
           </div>
 
           <div className="mt-6 grid gap-3 border-t border-slate-200 pt-5 text-sm">
-            <Link className="flex items-center justify-between text-brand hover:opacity-80" to="/parents/login">
-              <span className="inline-flex items-center gap-2 font-semibold">
+            <Link className="flex min-w-0 items-center justify-between gap-3 text-brand hover:opacity-80" to="/parents/login">
+              <span className="inline-flex min-w-0 items-center gap-2 font-semibold">
                 <Phone size={17} />
-                Acceso para padres por teléfono
+                <span className="min-w-0 truncate">Acceso para padres por teléfono</span>
               </span>
-              <ArrowRight size={16} />
+              <ArrowRight className="shrink-0" size={16} />
             </Link>
-            <div className="flex items-center gap-2 text-xs text-slate-500">
-              <LockKeyhole size={15} />
-              Sesión protegida con token, cookies seguras y control por rol.
+            <div className="flex min-w-0 items-start gap-2 text-xs leading-5 text-slate-500">
+              <LockKeyhole className="mt-0.5 shrink-0" size={15} />
+              <span className="min-w-0 break-words">Sesión protegida con token, cookies seguras y control por rol.</span>
             </div>
           </div>
         </form>

@@ -16,9 +16,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ProjectLogo } from '../components/ProjectLogo';
-
-const heroImage =
-  'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1800&q=80';
+import heroImage from '../assets/landing-school-hero.svg';
 
 const featureItems = [
   { icon: ShieldCheck, title: 'Multiempresa seguro', text: 'Datos escolares aislados por centro, rol y organización.' },
@@ -77,15 +75,15 @@ export function LandingPage() {
       <main>
         <section id="plataforma" className="mx-auto grid max-w-7xl gap-8 px-4 py-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,430px)] lg:py-12">
           <div className="min-w-0">
-            <div className="mb-4 flex items-center justify-between border-b border-slate-300 pb-3 text-[11px] uppercase tracking-wide text-slate-500">
-              <span>Inicio / Software escolar / Asistencia</span>
-              <span>SKU: reysoft-asistencia</span>
+            <div className="mb-4 flex min-w-0 items-center justify-between gap-3 overflow-hidden border-b border-slate-300 pb-3 text-[11px] uppercase tracking-wide text-slate-500">
+              <span className="min-w-0 truncate">Inicio / Software escolar / Asistencia</span>
+              <span className="hidden shrink-0 sm:inline">SKU: reysoft-asistencia</span>
             </div>
             <div className="overflow-hidden border border-slate-200 bg-white">
               <img
                 src={heroImage}
                 alt="Centro educativo usando una plataforma de asistencia"
-                className="h-[360px] w-full object-cover md:h-[520px]"
+                className="h-[360px] w-full bg-slate-50 object-contain md:h-[520px]"
               />
             </div>
             <div className="mt-5 grid gap-4 md:grid-cols-4">
@@ -101,7 +99,7 @@ export function LandingPage() {
 
           <aside className="self-start border border-slate-200 bg-white p-6 lg:sticky lg:top-20">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">SaaS para centros educativos</p>
-            <h1 className="mt-5 text-5xl font-semibold tracking-[-0.02em] text-slate-950 md:text-6xl">ReySoft-Asistencia</h1>
+            <h1 className="mt-5 text-5xl font-semibold text-slate-950 md:text-6xl">ReySoft-Asistencia</h1>
             <p className="mt-5 text-sm leading-7 text-slate-600">
               Plataforma profesional para controlar asistencia, estudiantes, tutores, reportes y comunicaciones
               institucionales desde un entorno multiempresa seguro.
@@ -150,7 +148,7 @@ export function LandingPage() {
         <section id="modulos" className="mx-auto grid max-w-7xl gap-8 border-t border-slate-200 px-4 py-12 lg:grid-cols-[minmax(280px,380px)_1fr]">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Módulos principales</p>
-            <h2 className="mt-3 text-4xl font-semibold tracking-[-0.02em]">Gestión escolar con estructura de producción</h2>
+            <h2 className="mt-3 text-4xl font-semibold">Gestión escolar con estructura de producción</h2>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
             {modules.map(([title, text]) => (

@@ -7,7 +7,7 @@ from starlette.responses import JSONResponse
 
 from app.core.config import settings
 from app.core.security_layer import apply_security_layer
-from app.routes import admin, attendance, auth, courses, dashboard, guardians, notifications, organization, parents, reports, students, users, whatsapp
+from app.routes import admin, attendance, auth, courses, dashboard, guardians, monitoring, notifications, organization, parents, reports, students, users, whatsapp
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +25,7 @@ def create_app() -> FastAPI:
     app.include_router(guardians.router)
     app.include_router(students.router)
     app.include_router(users.router)
+    app.include_router(monitoring.router)
     app.include_router(notifications.router)
     app.include_router(attendance.router)
     app.include_router(whatsapp.router)

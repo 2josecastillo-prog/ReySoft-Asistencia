@@ -8,6 +8,19 @@
   --accent-color: #F59E0B;
 }
 
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
   min-width: 320px;
@@ -24,11 +37,35 @@ textarea {
 }
 
 .form-input {
-  @apply w-full rounded-none border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20;
+  @apply box-border w-full min-w-0 max-w-full rounded-none border border-slate-300 bg-white px-3 py-2 text-sm outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20;
+}
+
+.login-panel {
+  justify-self: start;
+  margin-left: 0;
+  margin-right: auto;
+  width: min(100%, 22rem);
+  max-width: calc(100% - 1.5rem);
+}
+
+@media (min-width: 640px) {
+  .login-panel {
+    justify-self: center;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    max-width: 28rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .login-panel {
+    max-width: 460px;
+  }
 }
 
 .btn-primary {
-  @apply inline-flex items-center justify-center gap-2 rounded-none px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50;
+  @apply inline-flex box-border min-w-0 max-w-full items-center justify-center gap-2 rounded-none px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50;
   background: var(--primary-color);
 }
 

@@ -55,7 +55,7 @@ export function SchoolDashboardPage() {
           <div className="grid gap-8 lg:grid-cols-[1fr_260px] lg:items-end">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Panel escolar</p>
-              <h2 className="mt-4 max-w-3xl text-5xl font-semibold tracking-[-0.02em] text-slate-950">
+              <h2 className="mt-4 max-w-3xl text-5xl font-semibold text-slate-950">
                 Control diario de asistencia
               </h2>
               <p className="mt-5 max-w-2xl text-sm leading-7 text-slate-600">

@@ -1,4 +1,4 @@
-from app.routes import admin, attendance, auth, courses, dashboard, guardians, organization, parents, reports, students, whatsapp
+from app.routes import admin, attendance, auth, courses, dashboard, guardians, monitoring, organization, parents, reports, students, whatsapp
 
 __all__ = [
     "admin",
@@ -7,6 +7,7 @@ __all__ = [
     "courses",
     "dashboard",
     "guardians",
+    "monitoring",
     "organization",
     "parents",
     "reports",

@@ -644,3 +644,19 @@ RN-174. Toda respuesta de API debe incluir `X-Request-ID` generado por el backen
 RN-175. Las solicitudes de escritura con cuerpo deben usar un `Content-Type` permitido. Por defecto se aceptan `application/json` y `multipart/form-data`.
 
 RN-176. La configuracion transversal de CORS, rate limiting, limite de tamano, CSRF, Trusted Host, cabeceras, request id y content type debe aplicarse desde una capa central de seguridad.
+
+## 23. Observabilidad y refuerzo de base de datos
+
+RN-177. Las imagenes principales de landing y login deben servirse como assets locales versionados para evitar dependencias externas que puedan fallar por red, privacidad, CSP o bloqueo de terceros.
+
+RN-178. El frontend debe capturar errores JavaScript globales y promesas rechazadas no manejadas, y reportarlas al backend sin interrumpir la experiencia del usuario.
+
+RN-179. El endpoint de monitoreo de frontend debe aceptar datos acotados y sanitizados, registrar el evento en logs internos y responder sin exponer detalles tecnicos al cliente.
+
+RN-180. PostgreSQL debe reforzar la pertenencia a la misma organizacion mediante triggers para:
+
+- estudiante y curso
+- estudiante y tutor en `student_guardians`
+- asistencia, estudiante, usuario que registra y usuario que marca mensaje enviado
+
+RN-181. En Supabase se debe habilitar Row Level Security en las tablas publicas de la aplicacion para bloquear accesos directos accidentales desde roles anonimos o autenticados de Supabase. La API conserva sus validaciones propias de multiempresa.

@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 960" role="img" aria-labelledby="title desc">
+  <title id="title">Gestion institucional de asistencia escolar</title>
+  <desc id="desc">Vista institucional de un sistema escolar con asistencia, estudiantes, tutores, reportes y mensajes.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#e5edf8"/>
+    </linearGradient>
+    <linearGradient id="primary" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#2563EB"/>
+      <stop offset="1" stop-color="#0f3ea8"/>
+    </linearGradient>
+    <linearGradient id="secondary" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#1E293B"/>
+      <stop offset="1" stop-color="#0f172a"/>
+    </linearGradient>
+    <filter id="soft-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="30" stdDeviation="22" flood-color="#0f172a" flood-opacity=".16"/>
+    </filter>
+  </defs>
+
+  <rect width="1600" height="960" fill="url(#background)"/>
+  <rect y="710" width="1600" height="250" fill="#ffffff"/>
+  <path d="M94 790h1412" stroke="#cbd5e1" stroke-width="2"/>
+
+  <g filter="url(#soft-shadow)">
+    <rect x="104" y="120" width="690" height="520" fill="#fff" stroke="#cbd5e1"/>
+    <rect x="144" y="160" width="610" height="78" fill="url(#secondary)"/>
+    <text x="184" y="211" fill="#fff" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="700">Panel de asistencia</text>
+
+    <g transform="translate(144 286)">
+      <rect width="170" height="126" fill="#eff6ff" stroke="#bfdbfe"/>
+      <circle cx="48" cy="43" r="24" fill="url(#primary)"/>
+      <path d="M82 38h58M82 62h42" stroke="#2563EB" stroke-width="10"/>
+      <text x="28" y="101" fill="#1e293b" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">Llegó</text>
+    </g>
+    <g transform="translate(344 286)">
+      <rect width="170" height="126" fill="#fff7ed" stroke="#fed7aa"/>
+      <circle cx="48" cy="43" r="24" fill="#F59E0B"/>
+      <path d="M82 38h58M82 62h42" stroke="#F59E0B" stroke-width="10"/>
+      <text x="28" y="101" fill="#1e293b" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">Tarde</text>
+    </g>
+    <g transform="translate(544 286)">
+      <rect width="170" height="126" fill="#fef2f2" stroke="#fecaca"/>
+      <circle cx="48" cy="43" r="24" fill="#dc2626"/>
+      <path d="M82 38h58M82 62h42" stroke="#dc2626" stroke-width="10"/>
+      <text x="28" y="101" fill="#1e293b" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">Ausente</text>
+    </g>
+
+    <path d="M144 470h570M144 516h460M144 562h510" stroke="#cbd5e1" stroke-width="14"/>
+  </g>
+
+  <g filter="url(#soft-shadow)">
+    <rect x="884" y="156" width="520" height="650" fill="#fff" stroke="#cbd5e1"/>
+    <text x="924" y="228" fill="#0f172a" font-family="Inter, Arial, sans-serif" font-size="52" font-weight="700">ReySoft</text>
+    <text x="924" y="270" fill="#64748b" font-family="Inter, Arial, sans-serif" font-size="24">Asistencia escolar SaaS</text>
+
+    <g transform="translate(924 328)">
+      <rect width="180" height="112" fill="#f8fafc" stroke="#e2e8f0"/>
+      <text x="24" y="48" fill="#2563EB" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="700">5k</text>
+      <text x="24" y="82" fill="#64748b" font-family="Inter, Arial, sans-serif" font-size="17">estudiantes</text>
+    </g>
+    <g transform="translate(1134 328)">
+      <rect width="180" height="112" fill="#f8fafc" stroke="#e2e8f0"/>
+      <text x="24" y="48" fill="#F59E0B" font-family="Inter, Arial, sans-serif" font-size="34" font-weight="700">24/7</text>
+      <text x="24" y="82" fill="#64748b" font-family="Inter, Arial, sans-serif" font-size="17">panel web</text>
+    </g>
+
+    <g transform="translate(924 500)">
+      <rect width="390" height="66" fill="#eff6ff" stroke="#bfdbfe"/>
+      <circle cx="36" cy="33" r="16" fill="url(#primary)"/>
+      <path d="M72 27h238M72 45h166" stroke="#2563EB" stroke-width="9"/>
+    </g>
+    <g transform="translate(924 590)">
+      <rect width="390" height="66" fill="#fff7ed" stroke="#fed7aa"/>
+      <circle cx="36" cy="33" r="16" fill="#F59E0B"/>
+      <path d="M72 27h238M72 45h128" stroke="#F59E0B" stroke-width="9"/>
+    </g>
+    <g transform="translate(924 680)">
+      <rect width="390" height="66" fill="#f8fafc" stroke="#e2e8f0"/>
+      <circle cx="36" cy="33" r="16" fill="#16a34a"/>
+      <path d="M72 27h238M72 45h190" stroke="#94a3b8" stroke-width="9"/>
+    </g>
+  </g>
+
+  <g transform="translate(214 686)" filter="url(#soft-shadow)">
+    <rect width="460" height="136" fill="#fff" stroke="#cbd5e1"/>
+    <circle cx="72" cy="68" r="38" fill="url(#primary)"/>
+    <path d="M58 69l13 13 28-42" fill="none" stroke="#fff" stroke-width="9"/>
+    <path d="M132 46h250M132 78h178" stroke="#cbd5e1" stroke-width="14"/>
+  </g>
+</svg>
